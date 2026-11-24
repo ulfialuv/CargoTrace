@@ -237,7 +237,12 @@ button{font-family:inherit}
         ->filter()->take(2)->map(fn ($p) => strtoupper(substr($p, 0, 1)))->implode('');
     $initials = $initials ?: 'C';
 
-    $photoUrl = $user->profile_photo_path ? asset('storage/' . $user->profile_photo_path) : null;
+    // Foto dilayani lewat route khusus (tidak bergantung pada storage:link / APP_URL).
+    // Parameter "foto" berubah setiap kali foto diganti, jadi browser tidak memakai cache lama.
+    $photoUrl = $user->profile_photo_path
+        ? route('customer.profil.index', ['foto' => substr(md5($user->profile_photo_path), 0, 10)])
+        : null;
+
     $joined = $user->created_at ? $user->created_at->translatedFormat('F Y') : '-';
     $unread = $user->unreadNotifications()->count();
 

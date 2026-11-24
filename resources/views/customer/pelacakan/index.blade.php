@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pelacakan Pengiriman | CargoTrace</title>
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="preconnect" href="https://tile.openstreetmap.org" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
@@ -13,13 +13,13 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
-:root{--navy:#071633;--blue:#2457f5;--sky:#38bdf8;--ink:#17306a;--mut:#6b7fa3;--line:#e1e9f7;--bg:#eef3fb;--h:'Sora',sans-serif}
+:root{--navy:#071633;--blue:#2563eb;--sky:#38bdf8;--ink:#17306a;--mut:#6b7fa3;--line:#e1e9f7;--bg:#eef3fb;--h:'Sora',sans-serif}
 body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--ink);font-size:13px}
 a{color:inherit}
 button{font-family:inherit}
 :focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 
-/* SIDEBAR */
+/* SIDEBAR (tidak diubah) */
 .sidebar{position:fixed;inset:0 auto 0 0;width:272px;padding:26px 18px 18px;display:flex;flex-direction:column;background:linear-gradient(180deg,#071633 0%,#0a2257 65%,#0f3a8f 100%);color:#fff;z-index:1000;overflow-y:auto}
 .sidebar::before{content:"";position:absolute;width:300px;height:300px;top:-140px;right:-150px;border-radius:50%;background:radial-gradient(#38bdf860,#0000 70%);pointer-events:none}
 .brand{display:flex;align-items:center;gap:11px;padding:0 8px;position:relative}
@@ -43,145 +43,152 @@ button{font-family:inherit}
 .s-user button:hover{background:#ffffff1c}
 
 /* MAIN */
-.main{margin-left:272px;min-height:100vh;background:radial-gradient(circle at 100% 0,#cfe0ff 0,#0000 380px),radial-gradient(circle at 0 100%,#d7e8ff 0,#0000 340px),var(--bg)}
-.content{padding:26px 32px 40px}
-.topline{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:18px}
-.topline h1{font:800 26px var(--h);color:var(--navy);letter-spacing:-.6px}
-.topline p{margin-top:5px;color:var(--mut)}
-.bell{position:relative;display:grid;place-items:center;width:46px;height:46px;background:#fff;border:1px solid var(--line);border-radius:14px;color:#3d68a8;text-decoration:none;font-size:16px}
-.bell span{position:absolute;top:10px;right:11px;width:9px;height:9px;border-radius:50%;background:#ef4444;border:2px solid #fff}
+.main{margin-left:272px;min-height:100vh;background:radial-gradient(circle at 100% 0,#cfe3ff 0,#0000 380px),radial-gradient(circle at 0 100%,#d7e8ff 0,#0000 340px),var(--bg)}
+.content{padding:26px 32px 44px}
 
-/* HERO PENCARIAN */
-.hero{position:relative;overflow:hidden;padding:44px 48px;border-radius:32px;color:#fff;margin-bottom:24px;
- background:linear-gradient(100deg,#071633f5 0%,#0b2a6bdd 52%,#1d6fe866 100%),url('https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=1900&q=75') center/cover,linear-gradient(135deg,#071633,#1d4ed8);box-shadow:0 28px 58px #0b2a6b46}
-.hero::after{content:"";position:absolute;width:460px;height:460px;right:-130px;top:-220px;border-radius:50%;background:radial-gradient(#7cc8ff55,#0000 70%)}
+/* HERO + PENCARIAN */
+.hero{position:relative;overflow:hidden;padding:34px 38px;margin-bottom:22px;border-radius:28px;color:#fff;
+ background:linear-gradient(100deg,#061533 0%,#0b2a6b 60%,#1d4ed8 100%);box-shadow:0 24px 50px #0b2a6b44}
+.hero::after{content:"";position:absolute;width:380px;height:380px;right:-110px;top:-190px;border-radius:50%;background:radial-gradient(#7cc8ff55,#0000 70%)}
 .hero>*{position:relative;z-index:2}
-.hero h2{font:800 31px/1.22 var(--h);letter-spacing:-1px;max-width:600px}
-.hero p{margin-top:12px;max-width:500px;line-height:1.85;color:#cfe0ff}
-.search{display:flex;align-items:center;gap:8px;margin-top:24px;max-width:620px;padding:8px;border-radius:20px;background:#fff;box-shadow:0 18px 40px #02081c55}
-.search>i{padding:0 8px 0 14px;color:#8ca6c4}
-.search input{flex:1;min-width:0;height:44px;border:0;outline:0;background:transparent;font:600 14px 'Plus Jakarta Sans',sans-serif;color:var(--navy)}
-.search input::placeholder{font-weight:500;color:#9db0cc}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 20px;background:linear-gradient(135deg,#3b8bf5,#1d4ed8);color:#fff;text-decoration:none;border:0;border-radius:14px;font:700 12px 'Plus Jakarta Sans',sans-serif;cursor:pointer;transition:.2s;white-space:nowrap}
+.crumb{font-size:11px;color:#a9c8f5;margin-bottom:10px}
+.hero h1{font:800 29px/1.25 var(--h);letter-spacing:-.8px}
+.hero p{margin-top:10px;max-width:600px;line-height:1.75;color:#cfe0ff}
+.hero-row{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap}
+.hstats{display:flex;gap:10px;flex-wrap:wrap}
+.hs{min-width:112px;padding:12px 16px;border-radius:16px;background:#ffffff1c;border:1px solid #ffffff35;font-size:11px;color:#dbe9ff}
+.hs b{display:block;font:800 21px var(--h);color:#fff}
+.sform{display:flex;gap:10px;margin-top:22px;padding:10px;border-radius:18px;background:#fff;box-shadow:0 14px 34px #06153344;max-width:780px}
+.sform .in{position:relative;flex:1;min-width:0}
+.sform .in i{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:#8ca6c4}
+.sform input{width:100%;padding:14px 16px 14px 44px;border:0;border-radius:12px;background:#f4f8ff;color:var(--ink);font:600 13.5px 'Plus Jakarta Sans',sans-serif}
+.sform input:focus{outline:2px solid #2563eb55}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 20px;background:linear-gradient(135deg,#3b8bf5,#1d4ed8);color:#fff;text-decoration:none;border:0;border-radius:12px;cursor:pointer;font:700 12px 'Plus Jakarta Sans',sans-serif;white-space:nowrap;transition:.2s;box-shadow:0 8px 20px #2563eb44}
 .btn:hover{filter:brightness(1.1)}
-.btn-light{background:#e8f1ff;color:#1d4ed8}
-.btn-ghost{background:#ffffff1f;border:1px solid #ffffff3a;color:#fff}
-.chips{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:18px}
-.chips>span{font-size:11.5px;color:#a9c4f0;margin-right:4px}
-.chip{display:inline-flex;align-items:center;gap:7px;padding:8px 13px;border-radius:20px;background:#ffffff1c;border:1px solid #ffffff33;color:#fff;text-decoration:none;font-size:11.5px;font-weight:600;backdrop-filter:blur(8px);transition:.2s}
-.chip:hover{background:#ffffff38}
-.chip i{width:7px;height:7px;border-radius:50%;background:#7dd3fc}
-.chip.t-delivered i{background:#4ade80}.chip.t-delayed i{background:#fb7185}.chip.t-created i{background:#fbbf24}
+.btn-light{background:#e8f1ff;color:#1d4ed8;box-shadow:none}
 
 .alert{display:flex;gap:12px;padding:16px 18px;border-radius:18px;margin-bottom:20px;line-height:1.7;font-size:12px}
 .alert>i{margin-top:3px}
 .alert-error{color:#b42332;background:#fff0f1;border:1px solid #ffd9dc}
-.alert-info{color:#2c4f94;background:#edf3ff;border:1px solid #dce7ff}
 
-/* STATUS */
-.status{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;font-size:10.5px;font-weight:700;white-space:nowrap}
+/* PICKER */
+.pick{display:flex;gap:10px;overflow-x:auto;padding:4px 2px 14px;margin-bottom:10px;scrollbar-width:thin}
+.pk{flex:none;min-width:210px;padding:14px 16px;background:#fff;border:1px solid var(--line);border-radius:18px;text-decoration:none;transition:.2s;box-shadow:0 8px 22px #2563eb0d}
+.pk:hover{transform:translateY(-3px);border-color:#9fc2f7}
+.pk.on{border-color:var(--blue);box-shadow:0 12px 28px #2563eb30}
+.pk b{display:block;color:var(--blue);font-size:12.5px}
+.pk strong{display:block;margin-top:5px;font-size:12px;color:var(--navy);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pk small{display:block;margin:5px 0 8px;font-size:10.5px;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* PANEL & KOMPONEN */
+.panel{padding:24px;background:#fff;border:1px solid var(--line);border-radius:26px;box-shadow:0 10px 30px #2563eb0d;min-width:0}
+.panel.flush{padding:0;overflow:visible}
+.ph{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:16px}
+.ph h2{font:700 16.5px var(--h);color:var(--navy);letter-spacing:-.3px;display:flex;align-items:center;gap:10px}
+.ph h2 .hi{display:grid;place-items:center;width:34px;height:34px;border-radius:11px;background:linear-gradient(135deg,#3b8bf5,#1d4ed8);color:#fff;font-size:14px;flex:none}
+.ph p{margin-top:6px;font-size:12px;color:var(--mut)}
+.sect{margin-bottom:22px}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin-bottom:22px}
+.gmap{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(320px,1fr);gap:20px;margin-bottom:22px;align-items:start}
+.status{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap}
 .status::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
-.status-transit{background:#e5f1ff;color:#2876c5}
-.status-delivered{background:#e8f7ef;color:#26734d}
-.status-created{background:#fff4dc;color:#b77900}
-.status-delayed{background:#ffe9e9;color:#c92f3a}
-.status-default{background:#eef0f4;color:#667085}
+.st-CREATED{background:#e8eef7;color:#5b6f90}.st-BOOKED{background:#e0edff;color:#1d4ed8}.st-PICKED_UP{background:#f0eaff;color:#7c3aed}.st-IN_TRANSIT{background:#fff4dc;color:#b77900}.st-DELIVERED{background:#e8f7ef;color:#26734d}.st-DELAYED{background:#ffe9e9;color:#c92f3a}
+.kv{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.kv div{padding:13px 15px;border-radius:15px;background:#f4f8ff}
+.kv small{display:block;font-size:10px;color:#8ca6c4;font-weight:600}
+.kv b{display:block;margin-top:5px;font-size:12.5px;color:var(--navy);overflow-wrap:anywhere}
+.sum-top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:20px}
+.sum-top h2{font:800 24px var(--h);color:var(--navy);letter-spacing:-.5px}
+.sum-top p{margin-top:6px;color:var(--mut)}
+.rt{display:flex;align-items:center;gap:12px;margin:6px 0 22px}
+.rt .d{flex:none;width:14px;height:14px;border-radius:50%;border:4px solid var(--blue);background:#fff}.rt .d.e{border-color:#16a34a}
+.rt .pt{min-width:0;max-width:30%}.rt .pt b{display:block;font-size:13px;color:var(--navy);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rt .pt small{font-size:10px;color:#8ca6c4;font-weight:600}
+.rt .ln{flex:1;height:8px;border-radius:6px;background:#e6eefc;position:relative}
+.rt .ln i.f{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,#38bdf8,#1d4ed8)}
+.rt .ln span{position:absolute;top:50%;transform:translate(-50%,-50%);display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#f59e0b;border:3px solid #fff;color:#fff;font-size:11px;box-shadow:0 4px 12px #f59e0b66}
+.prog{display:flex;align-items:flex-start;margin-bottom:22px}
+.pg{flex:1;text-align:center;position:relative}
+.pg::before{content:"";position:absolute;top:13px;left:-50%;width:100%;height:3px;background:#e1eafa}
+.pg:first-child::before{display:none}.pg.done::before{background:var(--blue)}
+.pg i{position:relative;z-index:2;display:grid;place-items:center;width:28px;height:28px;margin:0 auto;border-radius:50%;background:#e1eafa;color:#fff;font-size:11px}
+.pg.done i{background:var(--blue)}.pg.now i{background:#fff;border:3px solid var(--blue);box-shadow:0 0 0 5px #2563eb22;color:var(--blue)}
+.pg small{display:block;margin-top:7px;font-size:10px;font-weight:600;color:#8ca6c4}.pg.now small,.pg.done small{color:var(--navy)}
 
-/* KARTU HASIL */
-.result{position:relative;overflow:hidden;border-radius:30px;color:#fff;padding:30px 34px 26px;margin-bottom:20px;box-shadow:0 24px 50px #0b2a6b38}
-.result.darat{background:linear-gradient(180deg,#071633d8,#071633fa),url('https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=1600&q=70') center/cover,#0a2257}
-.result.laut{background:linear-gradient(180deg,#071633d8,#071633fa),url('https://images.unsplash.com/photo-1494412651409-8963ce7935a7?auto=format&fit=crop&w=1600&q=70') center/cover,#0a2257}
-.result.udara{background:linear-gradient(180deg,#071633d8,#071633fa),url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=1600&q=70') center/cover,#0a2257}
-.r-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
-.r-top small{display:block;font-size:11px;color:#9fd0ff;font-weight:600;margin-bottom:6px}
-.r-num{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.r-num h2{font:800 28px var(--h);letter-spacing:-.8px}
-.copy{display:inline-flex;align-items:center;gap:7px;padding:7px 12px;border:1px solid #ffffff3a;border-radius:10px;background:#ffffff1c;color:#fff;font-size:11px;font-weight:600;cursor:pointer}
-.copy:hover{background:#ffffff36}
-.r-sub{margin-top:8px;color:#cfe0ff;font-size:12.5px}
-.result .status{background:#ffffffee}
-
-/* garis perjalanan */
-.lane{position:relative;margin:40px 8px 8px}
-.lane-ends{display:flex;justify-content:space-between;gap:14px}
-.lane-ends>div{max-width:44%}
-.lane-ends small{display:flex;align-items:center;gap:7px;font-size:11px;color:#9fd0ff}
-.lane-ends strong{display:block;margin-top:6px;font:700 17px var(--h);letter-spacing:-.3px;overflow-wrap:anywhere}
-.lane-ends .r{text-align:right}.lane-ends .r small{justify-content:flex-end}
-.track{position:relative;height:6px;margin:30px 14px 0;border-radius:6px;background:#ffffff26}
-.track .fill{position:absolute;left:0;top:0;bottom:0;border-radius:6px;background:linear-gradient(90deg,#38bdf8,#7aa2ff);width:0;transition:width 1.4s cubic-bezier(.2,.8,.2,1)}
-.track .dot{position:absolute;top:50%;width:13px;height:13px;border-radius:50%;background:#fff;border:3px solid #38bdf8;transform:translate(-50%,-50%)}
-.track .dot.end{border-color:#fb7185}
-.vehicle{position:absolute;top:-25px;left:0;display:grid;place-items:center;width:44px;height:44px;margin-left:-22px;border-radius:50%;background:#fff;color:var(--blue);font-size:17px;box-shadow:0 10px 24px #02081c66;transition:left 1.4s cubic-bezier(.2,.8,.2,1)}
-.vehicle::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:2px solid #7dd3fc99;animation:pulse 2s infinite}
-@keyframes pulse{0%{transform:scale(.85);opacity:1}100%{transform:scale(1.35);opacity:0}}
-.pct{position:absolute;right:0;top:20px;font-size:11px;color:#9fd0ff;font-weight:600}
-
-.steps{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:34px;padding-top:22px;border-top:1px solid #ffffff22}
-.step{text-align:center}
-.step i{display:grid;place-items:center;width:30px;height:30px;margin:0 auto 8px;border-radius:50%;background:#ffffff1c;border:2px solid #ffffff33;color:#ffffff88;font-size:11px;font-style:normal}
-.step.done i{background:#38bdf8;border-color:#38bdf8;color:#071633}
-.step.cur i{background:#fff;border-color:#fff;color:var(--blue);box-shadow:0 0 0 5px #ffffff30}
-.step small{display:block;font-size:10.5px;line-height:1.4;color:#a9c4f0}
-.step.done small,.step.cur small{color:#fff;font-weight:700}
-
-/* RINGKASAN */
-.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:20px}
-.kpi{display:flex;gap:14px;align-items:center;padding:18px;background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:0 10px 30px #2457f50d;min-width:0}
-.kpi>i{flex:none;display:grid;place-items:center;width:46px;height:46px;border-radius:15px;background:#e8f1ff;color:var(--blue);font-size:17px}
-.kpi small{display:block;font-size:11px;color:var(--mut);font-weight:600}
-.kpi b{display:block;margin-top:5px;font:700 14px var(--h);color:var(--navy);overflow-wrap:anywhere}
-.kpi.warn>i{background:#ffe9e9;color:#e5484d}.kpi.good>i{background:#e8f7ef;color:#16a34a}
-
-/* PETA + TIMELINE */
-.duo{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:20px;margin-bottom:20px;align-items:stretch}
-.panel{padding:24px;background:#fff;border:1px solid var(--line);border-radius:28px;box-shadow:0 10px 30px #2457f50d;min-width:0}
-.ph{margin-bottom:16px}
-.ph h3{font:700 16px var(--h);color:var(--navy);letter-spacing:-.3px;display:flex;align-items:center;gap:10px}
-.ph h3 i{display:grid;place-items:center;width:32px;height:32px;border-radius:11px;background:#e8f1ff;color:var(--blue);font-size:13px}
-.ph p{margin-top:7px;font-size:12px;color:var(--mut)}
-.mapbox{position:relative;border-radius:20px;overflow:hidden}
-#shipment-map{height:480px;width:100%;background:#e6edf8;z-index:1}
-.map-empty{position:absolute;inset:0;z-index:500;display:grid;place-items:center;background:#eef3fbd9;backdrop-filter:blur(3px);text-align:center;padding:20px}
-.map-empty div{max-width:260px;color:var(--mut);line-height:1.7}
-.map-empty i{display:grid;place-items:center;width:58px;height:58px;margin:0 auto 12px;border-radius:50%;background:#fff;color:var(--blue);font-size:22px;box-shadow:0 8px 20px #2457f522}
-.map-empty b{display:block;color:var(--navy);font:700 14px var(--h);margin-bottom:4px}
-.map-note{position:absolute;left:12px;right:12px;bottom:12px;z-index:500;padding:10px 14px;border-radius:12px;background:#ffffffee;border:1px solid var(--line);color:#3d5c91;font-size:11.5px;line-height:1.55;box-shadow:0 8px 20px #0b2a6b22}
-.vmark{display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:#fff;border:3px solid #2457f5;color:#2457f5;font-size:16px;box-shadow:0 8px 18px #0b2a6b55}
-.pin{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#2457f5;border:3px solid #fff;color:#fff;font:700 11px 'Plus Jakarta Sans',sans-serif;box-shadow:0 6px 14px #0b2a6b55}
-.pin.first{background:#19a66a}
-.pin.last{background:#e74d59;width:34px;height:34px;box-shadow:0 0 0 0 #e74d5988;animation:pin 2s infinite}
-@keyframes pin{0%{box-shadow:0 0 0 0 #e74d5999}100%{box-shadow:0 0 0 16px #e74d5900}}
-.leaflet-container{font-family:'Plus Jakarta Sans',sans-serif}
-.pop b{display:block;font:700 13px 'Sora',sans-serif;color:#071633}
-.pop p{margin-top:5px;font-size:11.5px;color:#4b628a;line-height:1.5}
-
-.tl-wrap{max-height:552px;overflow-y:auto;padding:4px 6px 4px 2px;margin-right:-6px}
-.tl{position:relative}
-.tl-i{position:relative;display:flex;gap:14px;padding:12px;margin-bottom:4px;border-radius:16px;transition:.2s}
-.tl-i.has-geo{cursor:pointer}
-.tl-i.has-geo:hover{background:#f1f6ff}
-.tl-i:not(:last-child)::before{content:"";position:absolute;left:22px;top:38px;bottom:-14px;width:2px;background:#dbe6f8}
-.tl-i>i{flex:none;display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#e8f1ff;color:var(--blue);font-size:9px;z-index:1}
-.tl-i.latest>i{background:var(--blue);color:#fff;box-shadow:0 0 0 5px #2457f522}
-.tl-i b{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--navy)}
-.tl-i b em{font-style:normal;padding:2px 8px;border-radius:10px;background:#e8f1ff;color:var(--blue);font-size:10px;font-weight:700}
-.tl-i p{margin-top:5px;font-size:12px;color:var(--mut);line-height:1.6}
-.tl-i small{display:block;margin-top:6px;font-size:11px;color:#9fb0c9}
-.tl-i .geo{margin-top:7px;display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--blue);font-weight:700}
-
-/* ETA */
-.eta-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.eta-box{padding:18px;border-radius:18px;background:#f4f8ff;border:1px solid #e3ecfb}
-.eta-box small{display:block;font-size:11px;color:#8ca6c4}
-.eta-box strong{display:block;margin-top:8px;font:700 17px var(--h);color:var(--navy);overflow-wrap:anywhere}
-.box-alert{margin-top:16px;padding:16px 18px;border-radius:18px;line-height:1.7;font-size:12px}
-.box-alert.err{background:#fff0f1;border:1px solid #ffd9dc;color:#b42332}
-.box-alert.ok{background:#edf3ff;border:1px solid #dce7ff;color:#2c4f94}
+/* KARTU INFO */
+.big{font:800 22px/1.25 var(--h);color:var(--navy);letter-spacing:-.4px}
+.sub{margin-top:6px;font-size:12px;color:var(--mut);line-height:1.6}
+.bar{height:8px;border-radius:6px;background:#e9f0fc;overflow:hidden;margin-top:14px}
+.bar i{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,#38bdf8,#1d4ed8)}
+.icb{display:grid;place-items:center;width:46px;height:46px;border-radius:14px;color:#fff;font-size:18px;margin-bottom:14px}
+.ok{background:linear-gradient(135deg,#3fc08a,#1f9a68)}.bad{background:linear-gradient(135deg,#f0626a,#c92f3a)}.warn{background:linear-gradient(135deg,#f5b73a,#d98a00)}.info{background:linear-gradient(135deg,#3b8bf5,#1d4ed8)}
+.cause{margin-top:14px;padding:12px 14px;border-radius:14px;background:#fff4f4;color:#a8323b;font-size:12px;line-height:1.6}
+.cause.n{background:#f4f8ff;color:var(--mut)}
+.rule{margin-top:12px;padding:11px 13px;border-radius:14px;background:#f4f8ff;color:var(--mut);font-size:11px;line-height:1.65}
+.rule b{color:var(--navy)}
+.mini{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.mini span{padding:6px 11px;border-radius:20px;background:#e8f1ff;color:#1d4ed8;font-size:10.5px;font-weight:700}
 .sev{display:inline-block;padding:4px 10px;border-radius:20px;font-size:10px;font-weight:700}
 .sev-low{background:#e6f8ef;color:#15945d}.sev-medium{background:#fff5df;color:#b7791f}.sev-high{background:#ffebed;color:#d6424d}
 
-.sect{margin-bottom:20px}
+/* TOOLBAR PETA */
+.tools{position:relative;z-index:20;display:flex;flex-wrap:wrap;align-items:center;gap:10px 20px;padding:16px 22px;border-bottom:1px solid #edf3fa;background:#fff;border-radius:26px 26px 0 0}
+.tg{display:flex;align-items:center;flex-wrap:wrap;gap:6px}
+.tgl{font-size:10px;font-weight:700;letter-spacing:.9px;color:#8ca6c4;margin-right:3px}
+.chip{display:inline-flex;align-items:center;gap:7px;padding:8px 13px;border:1px solid #dce8f8;border-radius:10px;background:#fbfdff;color:#3d68a8;font:600 11px 'Plus Jakarta Sans',sans-serif;cursor:pointer;transition:.15s}
+.chip:hover{background:#eef6ff}
+.chip.on{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 6px 16px #2563eb44}
+.tmsg{font-size:11px;color:#c92f3a;font-weight:600}
+
+/* PETA */
+.mapw{position:relative;isolation:isolate;border-radius:0 0 26px 26px;overflow:hidden}
+#mapMain{height:600px;width:100%;background:#dfeafb}
+.map-info{position:absolute;left:12px;bottom:22px;z-index:500;display:flex;flex-wrap:wrap;gap:10px;padding:8px 12px;background:#ffffffee;border:1px solid var(--line);border-radius:12px;font-size:10.5px;color:#3d68a8;font-weight:600;max-width:calc(100% - 24px)}
+.map-info span{display:flex;align-items:center;gap:6px}.map-info i.d{display:inline-block;width:9px;height:9px;border-radius:50%}
+.map-info i.ln{display:inline-block;width:18px;border-top:3px solid #f59e0b}.map-info i.ln.ds{border-top:3px dashed #2f8cf5}
+.pw{position:relative;width:34px;height:34px;display:grid;place-items:center}
+.pin{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;border:3px solid #fff;color:#fff;font-size:14px;box-shadow:0 4px 14px #0005}
+.pin.big{width:42px;height:42px;font-size:17px}
+.pin.fleet{box-shadow:0 0 0 6px #f59e0b55}
+.pl{position:absolute;top:40px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:3px;pointer-events:none}
+.vl{padding:2px 8px;border-radius:8px;background:#061533e6;color:#fff;font:700 9.5px 'Plus Jakarta Sans',sans-serif;white-space:nowrap;box-shadow:0 3px 8px #0004}
+.bd{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:9px;background:#fff;border:1px solid #cfe0f7;color:#1f4a8a;font:700 10px 'Plus Jakarta Sans',sans-serif;white-space:nowrap;box-shadow:0 3px 10px #0b2a6b33}
+.bd i{font-size:11px}
+.bd em{font-style:normal;font-weight:600;color:#8ca6c4;font-size:9px}
+.bd.bad{background:#fff1f1;border-color:#f5b5b5;color:#c92f3a}
+.bd.dim{color:#8ca6c4}
+.leaflet-container{font-family:'Plus Jakarta Sans',sans-serif}
+.leaflet-popup-content-wrapper{border-radius:14px}
+.pop{min-width:170px;font:12px/1.7 'Plus Jakarta Sans',sans-serif;color:#365775}.pop strong{display:block;font-size:13px;color:var(--navy)}.pop small{color:#8ca6c4}
+.pop .veh{display:inline-flex;align-items:center;gap:6px;margin:2px 0;padding:2px 9px;border-radius:12px;background:#eef4ff;color:#1d4ed8;font-weight:700}
+.pop .xtag{display:inline-block;margin:2px 0;padding:1px 8px;border-radius:10px;background:#ffe9e9;color:#c92f3a;font-weight:700;font-size:10.5px}
+
+/* TIMELINE */
+.tl-tools{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:10px}
+.tl-tools .chip{padding:6px 11px;font-size:10.5px}
+.tl-tools .sp{flex:1}
+.tl-sum{margin-bottom:14px;font-size:11px;color:var(--mut);line-height:1.6}
+.tl-sum b{color:var(--navy)}
+.tl-wrap{max-height:520px;overflow-y:auto;padding-right:6px}
+.tl{position:relative;padding-left:28px}
+.tl::before{content:"";position:absolute;left:8px;top:6px;bottom:6px;width:2px;background:#dbe6f8}
+.ti{position:relative;padding:0 0 20px}.ti:last-child{padding-bottom:0}
+.ti::before{content:"";position:absolute;left:-26px;top:3px;width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid #b9d2f7}
+.ti.cur::before{border-color:var(--blue);box-shadow:0 0 0 5px #2563eb22}
+.ti.exc::before{border-color:#e5484d;background:#ffe9e9}
+.ti.exc.cur::before{box-shadow:0 0 0 5px #e5484d33}
+.ti.geo{cursor:pointer}
+.ti.geo:hover b{color:var(--blue)}
+.ti b{display:block;font-size:12.5px;color:var(--navy)}
+.ti.exc b{color:#c92f3a}
+.ti span.loc{display:block;margin-top:3px;font-size:11.5px;color:#41608a}
+.ti small{display:block;margin-top:3px;font-size:10.5px;color:#8ca6c4;line-height:1.5}
+.ti .tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
+.tag{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:12px;font-size:9.5px;font-weight:700}
+.tag.n{background:#e8f7ef;color:#26734d}.tag.x{background:#ffe9e9;color:#c92f3a}.tag.c{background:#e0edff;color:#1d4ed8}.tag.g{background:#eef4ff;color:#1d4ed8}
+.nodata{padding:30px 12px;text-align:center;color:#8ca6c4;line-height:1.7}
+.nodata i{display:block;margin-bottom:10px;font-size:30px;color:#9db6dc}
+
+/* KENDALA (EXCEPTION) */
 .ex{padding:18px;border:1px solid var(--line);border-radius:18px;margin-bottom:12px;border-left:4px solid #e5484d}
 .ex.resolved{border-left-color:#16a34a}
 .ex:last-child{margin-bottom:0}
@@ -192,28 +199,56 @@ button{font-family:inherit}
 .ex dt{font-size:11px;color:#8ca6c4;margin-bottom:3px}
 .ex dd{font-size:12px;color:#2c4a7c;line-height:1.55}
 .ex dd.full{grid-column:1/-1}
+.st-OPEN,.st-INVESTIGATING{background:#ffe9e9;color:#c92f3a}.st-RESOLVED{background:#e8f7ef;color:#26734d}
 .empty{padding:30px 14px;text-align:center;color:var(--mut)}
 .empty>i{display:grid;place-items:center;width:64px;height:64px;margin:0 auto 12px;border-radius:50%;background:#e8f1ff;color:var(--blue);font-size:24px}
 .empty.good>i{background:#e8f7ef;color:#16a34a}
 .empty strong{display:block;font:700 15px var(--h);color:var(--navy);margin-bottom:5px}
 
+/* CUACA + WAKTU */
+.wg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.wc{padding:20px;border-radius:22px;border:1px solid var(--line);background:linear-gradient(165deg,#fff,#f1f7ff)}
+.wc.dark{background:linear-gradient(160deg,#061533,#0b2a6b 65%,#1747b8);color:#fff;border:0}
+.wt{display:flex;align-items:center;gap:10px;font-size:10.5px;font-weight:700;letter-spacing:.8px;color:#8ca6c4;margin-bottom:6px}
+.wc.dark .wt{color:#9fbcea}
+.wt .wi{display:grid;place-items:center;width:26px;height:26px;border-radius:8px;color:#fff;font-size:11px}
+.wn{font:700 15px var(--h);color:var(--navy);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wc.dark .wn{color:#fff}
+.wcur{display:flex;align-items:center;gap:14px;margin:14px 0}
+.wcur .tmp{font:800 40px var(--h);color:var(--navy);line-height:1}
+.wcur .ic{font-size:40px}
+.wcur small{display:block;margin-top:5px;font-size:12px;color:var(--mut);font-weight:600}
+.wm{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.wm div{padding:9px 6px;border-radius:12px;background:#eaf3ff;text-align:center}
+.wm b{display:block;font-size:12.5px;color:var(--navy)}.wm small{font-size:9.5px;color:#8ca6c4;font-weight:600}
+.fc{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.fc div{padding:9px 4px;border-radius:12px;border:1px solid var(--line);text-align:center;background:#fff}
+.fc small{display:block;font-size:10px;color:#8ca6c4;font-weight:600}.fc span{display:block;font-size:19px;margin:4px 0}.fc b{font-size:11px;color:var(--navy)}
+.ck{font:800 34px var(--h);letter-spacing:1px;margin:14px 0 6px}
+.cd{font-size:12px;color:#bcd3f7}
+.cz{display:inline-block;margin-top:12px;padding:5px 11px;border-radius:20px;background:#ffffff1f;font-size:10.5px;font-weight:700}
+.cdiff{margin-top:12px;font-size:11.5px;color:#9fbcea;line-height:1.6}
+.wph{padding:30px 10px;text-align:center;color:#8ca6c4;font-size:12px;line-height:1.7}
+.wc.dark .wph{color:#9fbcea}
+.skl{height:120px;border-radius:16px;background:linear-gradient(90deg,#edf3fc,#f8fbff,#edf3fc);background-size:200% 100%;animation:sk 1.3s infinite}
+@keyframes sk{to{background-position:-200% 0}}
+.lastloc{display:flex;gap:12px;align-items:center;padding:14px;border-radius:16px;background:linear-gradient(135deg,#eaf3ff,#dbeaff)}
+.note{margin-top:14px;font-size:11px;color:#8ca6c4;line-height:1.6}
+
 .acts{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
 .acts .btn{padding:14px 22px}
-.start{padding:50px 24px}
 .footer{text-align:center;color:#8ca6c4;font-size:11px;margin-top:30px}
 
-@media(max-width:1350px){.duo{grid-template-columns:1fr}.tl-wrap{max-height:none}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:1100px){.content{padding:20px}}
+/* RESPONSIVE */
+@media(max-width:1250px){.g3,.wg{grid-template-columns:1fr 1fr}.kv{grid-template-columns:1fr 1fr}}
+@media(max-width:1100px){.gmap{grid-template-columns:1fr}.content{padding:20px}.tl-wrap{max-height:none}}
 @media(max-width:750px){
  .sidebar{width:72px;padding:18px 8px}.brand{justify-content:center}
  .brand-name,.brand-sub,.s-title,.s-link span,.s-user b,.s-user small,.s-user button,.bdg{display:none}
  .s-link{justify-content:center;padding:13px 4px}.s-user{padding:8px;background:none;border:0}.s-user .who{justify-content:center}
- .main{margin-left:72px}.content{padding:16px 12px 28px}
- .hero{padding:30px 22px}.hero h2{font-size:23px}
- .search{flex-wrap:wrap}.search input{flex-basis:calc(100% - 50px)}.search .btn{flex:1}
- .result{padding:24px 20px}.r-num h2{font-size:21px}.lane-ends strong{font-size:14px}
- .steps{gap:2px}.step small{font-size:9px}
- .kpis,.eta-grid,.ex dl{grid-template-columns:1fr}.panel{padding:18px}#shipment-map{height:340px}
+ .main{margin-left:72px}.content{padding:16px 12px 30px}.hero{padding:26px 20px}.hero h1{font-size:22px}
+ .g3,.wg,.kv,.ex dl{grid-template-columns:1fr}.panel{padding:18px}.panel.flush{padding:0}.sform{flex-direction:column}
+ .rt .pt{max-width:36%}#mapMain{height:440px}.map-info{display:none}.tools{padding:14px}
 }
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
 </style>
@@ -222,8 +257,13 @@ button{font-family:inherit}
 <body>
 
 @php
-    $currentStatus = strtoupper($latestTracking->status ?? $shipment?->status ?? '');
-
+    $steps = [
+        ['CREATED', 'Dibuat', 'fa-file-circle-plus'],
+        ['BOOKED', 'Dijadwalkan', 'fa-calendar-check'],
+        ['PICKED_UP', 'Dijemput', 'fa-hand-holding-box'],
+        ['IN_TRANSIT', 'Dalam Perjalanan', 'fa-truck-fast'],
+        ['DELIVERED', 'Diterima', 'fa-circle-check'],
+    ];
     $statusLabels = [
         'CREATED' => 'Dibuat',
         'BOOKED' => 'Dijadwalkan',
@@ -232,48 +272,20 @@ button{font-family:inherit}
         'DELIVERED' => 'Terkirim',
         'DELAYED' => 'Terlambat',
     ];
-
-    $stepOrder = ['CREATED', 'BOOKED', 'PICKED_UP', 'IN_TRANSIT', 'DELIVERED'];
-    $stepLabels = ['Pengiriman Dibuat', 'Dijadwalkan', 'Barang Dijemput', 'Dalam Perjalanan', 'Barang Diterima'];
-
-    $statusLabel = $statusLabels[$currentStatus] ?? ($currentStatus ?: 'Belum tersedia');
-
-    $classOf = fn ($s) => match (strtoupper($s ?? '')) {
-        'PICKED_UP', 'IN_TRANSIT' => 'status-transit',
-        'DELIVERED' => 'status-delivered',
-        'CREATED', 'BOOKED' => 'status-created',
-        'DELAYED' => 'status-delayed',
-        default => 'status-default',
-    };
-    $statusClass = $classOf($currentStatus);
-
-    $transport = match (strtoupper($shipment?->transport_type ?? '')) {
-        'SEA' => ['laut', 'fa-ship', 'Jalur Laut'],
-        'AIR' => ['udara', 'fa-plane', 'Jalur Udara'],
-        default => ['darat', 'fa-truck', 'Jalur Darat'],
-    };
-
-    $formatDate = function ($value, $format = 'd M Y, H:i') {
-        if (!$value) return '-';
-        try { return \Carbon\Carbon::parse($value)->format($format); }
-        catch (\Throwable $e) { return '-'; }
-    };
-
-    $eta = $shipment?->estimated_arrival;
-    $departure = $shipment?->estimated_departure;
-
-    $curIdx = array_search($currentStatus, $stepOrder);
-    $curIdx = $curIdx === false ? -1 : $curIdx;
-
-    $remainingLabel = null;
-    if ($remainingHours !== null) {
-        $remainingLabel = $remainingHours >= 48
-            ? floor($remainingHours / 24) . ' hari lagi'
-            : $remainingHours . ' jam lagi';
-    }
+    $si = $selected ? array_search($selected['status'], array_column($steps, 0), true) : false;
+    $si = $si === false ? -1 : $si;
+    $pct = $si < 0 ? 0 : (int) round($si / 4 * 100);
+    $modeLabel = ['udara' => 'Udara', 'laut' => 'Laut', 'darat' => 'Darat'];
+    $modeIcon = ['udara' => 'fa-plane', 'laut' => 'fa-ship', 'darat' => 'fa-truck-fast'];
 
     $unread = auth()->user()->unreadNotifications()->count();
     $userName = auth()->user()->name;
+
+    $fmt = function ($value) {
+        if (!$value) return '-';
+        try { return \Carbon\Carbon::parse($value)->format('d M Y, H:i'); }
+        catch (\Throwable $e) { return '-'; }
+    };
 @endphp
 
 <aside class="sidebar">
@@ -311,541 +323,564 @@ button{font-family:inherit}
 <main class="main">
 <section class="content">
 
-    <div class="topline">
-        <div>
-            <h1>Pelacakan Pengiriman</h1>
-            <p>Pantau perjalanan barang Anda dari asal sampai tujuan.</p>
-        </div>
-        <a href="{{ url('/customer/notifikasi') }}" class="bell" aria-label="Notifikasi">
-            <i class="fa-regular fa-bell"></i>
-            @if($unread > 0)<span></span>@endif
-        </a>
-    </div>
-
-    {{-- PENCARIAN --}}
-    <div class="hero">
-        <h2>Di mana barang Anda sekarang?</h2>
-        <p>Masukkan nomor resi untuk melihat posisi, riwayat perjalanan, dan perkiraan waktu tiba.</p>
-
-        <form method="GET" action="{{ route('customer.pelacakan.index') }}" class="search">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" name="tracking" value="{{ $trackingNumber }}" placeholder="Contoh: CT-2026-001" required aria-label="Nomor resi" autocomplete="off">
-            <button type="submit" class="btn"><i class="fa-solid fa-location-crosshairs"></i> Lacak</button>
-        </form>
-
-        @if($recentShipments->isNotEmpty())
-            <div class="chips">
-                <span>Pengiriman terbaru:</span>
-                @foreach($recentShipments as $recent)
-                    @php
-                        $rc = strtoupper($recent->status ?? '');
-                        $rt = $rc === 'DELIVERED' ? 't-delivered' : ($rc === 'DELAYED' ? 't-delayed' : (in_array($rc, ['CREATED', 'BOOKED']) ? 't-created' : ''));
-                    @endphp
-                    <a href="{{ route('customer.pelacakan.index', ['tracking' => $recent->shipment_number]) }}" class="chip {{ $rt }}">
-                        <i></i>{{ $recent->shipment_number }}
-                    </a>
-                @endforeach
+    <!-- 1. PENCARIAN PENGIRIMAN -->
+    <section class="hero">
+        <div class="crumb"><a href="{{ route('customer.dashboard') }}" style="text-decoration:none">Dashboard</a> &nbsp;/&nbsp; Pelacakan Pengiriman</div>
+        <div class="hero-row">
+            <div>
+                <h1>Pelacakan Pengiriman</h1>
+                <p>Lacak posisi barang Anda berdasarkan nomor resi: status, estimasi tiba, riwayat perjalanan, dan rute pada peta.</p>
             </div>
-        @endif
-    </div>
+            <div class="hstats">
+                <div class="hs"><b>{{ number_format($stats['events']) }}</b>event tracking</div>
+                <div class="hs"><b>{{ $stats['in_transit'] }}</b>dalam perjalanan</div>
+                <div class="hs"><b>{{ $stats['delayed'] }}</b>terlambat</div>
+                <div class="hs"><b>{{ $stats['delivered'] }}</b>terkirim</div>
+            </div>
+        </div>
+        <form class="sform" action="{{ route('customer.pelacakan.index') }}" method="GET">
+            <div class="in">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" name="search" value="{{ $search }}" placeholder="Nomor resi / pengiriman, contoh: CT-2026-001" aria-label="Nomor resi atau nomor pengiriman" autocomplete="off">
+            </div>
+            <button type="submit" class="btn"><i class="fa-solid fa-location-crosshairs"></i> Lacak Pengiriman</button>
+            @if($search !== '')<a href="{{ route('customer.pelacakan.index') }}" class="btn btn-light">Reset</a>@endif
+        </form>
+    </section>
 
-
-    @if($trackingNumber !== '' && !$shipment)
+    @if($search !== '' && !$selected)
         <div class="alert alert-error">
             <i class="fa-solid fa-circle-exclamation"></i>
+            <div>Nomor resi <strong>{{ $search }}</strong> tidak ditemukan di akun Anda. Periksa penulisannya, lalu coba lagi.</div>
+        </div>
+    @endif
+
+    @if($selected && count($picker) > 1)
+    <div class="pick" aria-label="Pilih pengiriman">
+        @foreach($picker as $p)
+            <a href="{{ route('customer.pelacakan.index', array_filter(['id' => $p['id'], 'search' => $search])) }}" class="pk {{ $p['id'] === $selected['id'] ? 'on' : '' }}">
+                <b>{{ $p['number'] }}</b>
+                <strong>{{ $p['customer'] }}</strong>
+                <small>{{ $p['origin'] }} → {{ $p['destination'] }}</small>
+                <span class="status st-{{ $p['status'] }}">{{ $statusLabels[$p['status']] ?? str_replace('_', ' ', $p['status']) }}</span>
+            </a>
+        @endforeach
+    </div>
+    @endif
+
+    @if(!$selected && $search === '')
+    <section class="panel sect">
+        <div class="empty">
+            <i class="fa-solid fa-truck-fast"></i>
+            <strong>Belum ada pengiriman</strong>
+            Pengiriman Anda akan muncul di sini. Anda juga bisa mencari dengan nomor resi pada kolom di atas.
+        </div>
+    </section>
+    @endif
+
+    @if($selected)
+    <!-- 2. DETAIL PENGIRIMAN -->
+    <section class="panel sect">
+        <div class="sum-top">
             <div>
-                Nomor resi <strong>{{ $trackingNumber }}</strong> tidak ditemukan di akun Anda.
-                Periksa penulisannya, atau pilih salah satu pengiriman terbaru di atas.
+                <h2>{{ $selected['number'] }}</h2>
+                <p>{{ $selected['name'] ?: 'Barang' }} · {{ $selected['customer'] }}</p>
+            </div>
+            <span class="status st-{{ $selected['status'] }}" style="font-size:11.5px;padding:8px 16px">{{ $statusLabels[$selected['status']] ?? str_replace('_', ' ', $selected['status']) }}</span>
+        </div>
+
+        <div class="rt">
+            <div class="d"></div>
+            <div class="pt"><small>ASAL</small><b>{{ $selected['origin'] ?: '-' }}</b></div>
+            <div class="ln"><i class="f" style="width:{{ $pct }}%"></i><span style="left:{{ $pct }}%"><i class="fa-solid {{ $modeIcon[$selected['mode']] ?? 'fa-truck-fast' }}"></i></span></div>
+            <div class="pt" style="text-align:right"><small>TUJUAN</small><b>{{ $selected['destination'] ?: '-' }}</b></div>
+            <div class="d e"></div>
+        </div>
+
+        <div class="prog">
+            @foreach($steps as $n => [$key, $label, $icon])
+                <div class="pg {{ $n < $si ? 'done' : ($n === $si ? 'now' : '') }}">
+                    <i class="fa-solid {{ $n < $si ? 'fa-check' : $icon }}"></i><small>{{ $label }}</small>
+                </div>
+            @endforeach
+        </div>
+
+        <div class="kv">
+            <div><small>NOMOR RESI</small><b>{{ $selected['number'] }}</b></div>
+            <div><small>PELANGGAN</small><b>{{ $selected['customer'] }}</b></div>
+            <div><small>PERUSAHAAN PENGIRIMAN</small><b>{{ $selected['carrier'] ?: '-' }}</b></div>
+            <div><small>LOKASI ASAL</small><b>{{ $selected['origin'] ?: '-' }}</b></div>
+            <div><small>LOKASI TUJUAN</small><b>{{ $selected['destination'] ?: '-' }}</b></div>
+            <div><small>MODA &amp; BARANG</small><b>{{ $modeLabel[$selected['mode']] ?? '-' }} · {{ $selected['cargo'] ?: '-' }}{{ $selected['weight'] ? ' · ' . rtrim(rtrim(number_format((float) $selected['weight'], 2, ',', '.'), '0'), ',') . ' kg' : '' }}</b></div>
+        </div>
+    </section>
+
+    <!-- LOKASI TERAKHIR, ETA, KETERLAMBATAN -->
+    <section class="g3">
+        <div class="panel">
+            <div class="ph"><div><h2><span class="hi"><i class="fa-solid fa-location-crosshairs"></i></span> Lokasi Terakhir</h2></div></div>
+            <div id="lastLoc"></div>
+        </div>
+        <div class="panel">
+            <div class="ph"><div><h2><span class="hi"><i class="fa-solid fa-calendar-check"></i></span> Estimasi Tiba (ETA)</h2></div></div>
+            <div id="etaBox"></div>
+        </div>
+        <div class="panel">
+            <div class="ph"><div><h2><span class="hi"><i class="fa-solid fa-clock"></i></span> Informasi Keterlambatan</h2></div></div>
+            <div id="delayBox"></div>
+        </div>
+    </section>
+
+    <!-- PETA RUTE + RIWAYAT -->
+    <section class="gmap" id="peta">
+        <div class="panel flush">
+            <div class="tools">
+                <div class="tg" id="viewGroup">
+                    <span class="tgl">TAMPILAN</span>
+                    <button type="button" class="chip on" data-view="loc"><i class="fa-solid fa-location-dot"></i> Lokasi</button>
+                    <button type="button" class="chip" data-view="wx"><i class="fa-solid fa-cloud-sun-rain"></i> Cuaca</button>
+                    <button type="button" class="chip" data-view="time"><i class="fa-regular fa-clock"></i> Waktu</button>
+                </div>
+                <div class="tg" id="jumpGroup">
+                    <span class="tgl">PENGIRIMAN</span>
+                    <button type="button" class="chip" data-j="all"><i class="fa-solid fa-route"></i> Seluruh rute</button>
+                    <button type="button" class="chip" data-j="o"><i class="fa-solid fa-box"></i> Asal</button>
+                    <button type="button" class="chip" data-j="p"><i class="fa-solid fa-truck-fast"></i> Posisi</button>
+                    <button type="button" class="chip" data-j="d"><i class="fa-solid fa-flag-checkered"></i> Tujuan</button>
+                </div>
+                <span class="tmsg" id="tmsg"></span>
+            </div>
+            <div class="mapw">
+                <div id="mapMain"></div>
+                <div class="map-info" id="mapInfo"></div>
             </div>
         </div>
-    @endif
 
+        <div class="panel">
+            <div class="ph"><div><h2><span class="hi"><i class="fa-solid fa-clock-rotate-left"></i></span> Riwayat Perjalanan</h2><p>Timeline event tracking secara kronologis. Klik event yang punya lokasi untuk melihatnya di peta.</p></div></div>
+            <div id="tlTools"></div>
+            <div class="tl-wrap" id="timeline"></div>
+        </div>
+    </section>
 
-    @if($shipment)
+    <!-- KENDALA PENGIRIMAN (EXCEPTION) -->
+    <section class="panel sect">
+        <div class="ph"><div><h2><span class="hi"><i class="fa-solid fa-triangle-exclamation"></i></span> Kendala Pengiriman</h2><p>Masalah yang tercatat pada pengiriman ini.</p></div></div>
 
-        {{-- KARTU HASIL + GARIS PERJALANAN --}}
-        <section class="result {{ $transport[0] }}">
-            <div class="r-top">
-                <div>
-                    <small>Nomor resi</small>
-                    <div class="r-num">
-                        <h2 id="resi">{{ $shipment->shipment_number }}</h2>
-                        <button type="button" class="copy" id="copyBtn"><i class="fa-regular fa-copy"></i> <span>Salin</span></button>
-                    </div>
-                    <p class="r-sub">
-                        {{ $shipment->shipment_name ?: 'Barang' }}
-                        &middot; {{ $shipment->carrier ?: 'Perusahaan belum tersedia' }}
-                        &middot; {{ $transport[2] }}
-                    </p>
-                </div>
-                <span class="status {{ $statusClass }}">{{ $statusLabel }}</span>
-            </div>
-
-            <div class="lane">
-                <div class="lane-ends">
+        @forelse($exceptions as $exception)
+            @php
+                $sev = strtoupper($exception->severity ?? 'LOW');
+                $exSt = strtoupper($exception->status ?? 'OPEN');
+                $isResolved = $exSt === 'RESOLVED';
+                $exLabel = ['OPEN' => 'Terbuka', 'INVESTIGATING' => 'Diselidiki', 'RESOLVED' => 'Selesai'][$exSt] ?? $exSt;
+            @endphp
+            <div class="ex {{ $isResolved ? 'resolved' : '' }}">
+                <div class="ex-top">
+                    <strong>{{ str_replace('_', ' ', $exception->type ?? 'Pengecualian') }}</strong>
                     <div>
-                        <small><i class="fa-solid fa-circle-dot" style="color:#4ade80"></i> Kota asal</small>
-                        <strong>{{ $shipment->origin ?: 'Belum tersedia' }}</strong>
-                    </div>
-                    <div class="r">
-                        <small>Kota tujuan <i class="fa-solid fa-location-dot" style="color:#fb7185"></i></small>
-                        <strong>{{ $shipment->destination ?: 'Belum tersedia' }}</strong>
+                        <span class="sev sev-{{ strtolower($sev) }}">{{ $sev }}</span>
+                        <span class="status st-{{ $exSt }}">{{ $exLabel }}</span>
                     </div>
                 </div>
-
-                <div class="track" data-progress="{{ $progress }}">
-                    <span class="dot" style="left:0"></span>
-                    <span class="dot end" style="left:100%"></span>
-                    <div class="fill" id="fill"></div>
-                    <div class="vehicle" id="vehicle"><i class="fa-solid {{ $transport[1] }}"></i></div>
-                    <span class="pct">{{ $progress }}% perjalanan</span>
-                </div>
+                <dl>
+                    <div><dt>Lokasi</dt><dd>{{ $exception->location ?: 'Belum tersedia' }}</dd></div>
+                    <div><dt>Waktu terdeteksi</dt><dd>{{ $fmt($exception->occurred_at ?? $exception->created_at) }}</dd></div>
+                    <div><dt>Deskripsi</dt><dd class="full">{{ $exception->description ?: 'Belum ada deskripsi.' }}</dd></div>
+                    <div><dt>Penyebab</dt><dd class="full">{{ $exception->cause ?: 'Belum ada informasi penyebab.' }}</dd></div>
+                    @if($exception->resolved_at)
+                        <div><dt>Waktu penyelesaian</dt><dd>{{ $fmt($exception->resolved_at) }}</dd></div>
+                    @endif
+                </dl>
             </div>
-
-            <div class="steps">
-                @foreach($stepOrder as $i => $st)
-                    <div class="step {{ $i < $curIdx ? 'done' : ($i === $curIdx ? 'cur' : '') }}">
-                        <i>@if($i < $curIdx)<span class="fa-solid fa-check"></span>@else{{ $i + 1 }}@endif</i>
-                        <small>{{ $stepLabels[$i] }}</small>
-                    </div>
-                @endforeach
+        @empty
+            <div class="empty good">
+                <i class="fa-solid fa-circle-check"></i>
+                <strong>Tidak ada kendala</strong>
+                Perjalanan barang Anda berjalan tanpa masalah yang tercatat.
             </div>
-        </section>
+        @endforelse
+    </section>
 
+    <!-- CUACA PENGIRIMAN -->
+    <section class="panel sect">
+        <div class="ph"><div><h2><span class="hi"><i class="fa-solid fa-cloud-sun-rain"></i></span> Cuaca di Lokasi Pengiriman</h2><p>Kondisi terkini dan prakiraan 3 hari di lokasi asal, lokasi saat ini, dan tujuan. Sumber: Open-Meteo.</p></div></div>
+        <div class="wg" id="weatherGrid"><div class="skl"></div><div class="skl"></div><div class="skl"></div></div>
+        <div class="note"><i class="fa-solid fa-circle-info"></i> Cuaca hanya informasi pendukung dan bukan prediksi atau bukti keterlambatan.</div>
+    </section>
 
-        {{-- RINGKASAN --}}
-        <div class="kpis">
-            <div class="kpi">
-                <i class="fa-solid fa-location-crosshairs"></i>
-                <div><small>Lokasi terakhir</small><b>{{ $lastLocation ?: 'Belum tersedia' }}</b></div>
-            </div>
-            <div class="kpi">
-                <i class="fa-regular fa-clock"></i>
-                <div><small>Pembaruan terakhir</small><b>{{ $formatDate($lastUpdated) }}</b></div>
-            </div>
-            <div class="kpi">
-                <i class="fa-solid fa-plane-departure"></i>
-                <div><small>Keberangkatan</small><b>{{ $formatDate($departure, 'd M Y') }}</b></div>
-            </div>
-            <div class="kpi {{ $isDelayed ? 'warn' : ($currentStatus === 'DELIVERED' ? 'good' : '') }}">
-                <i class="fa-solid {{ $isDelayed ? 'fa-triangle-exclamation' : ($currentStatus === 'DELIVERED' ? 'fa-circle-check' : 'fa-flag-checkered') }}"></i>
-                <div>
-                    <small>Estimasi tiba</small>
-                    <b>{{ $formatDate($eta, 'd M Y') }}</b>
-                </div>
-            </div>
-        </div>
+    <!-- WAKTU LOKAL PENGIRIMAN -->
+    <section class="panel sect">
+        <div class="ph"><div><h2><span class="hi"><i class="fa-solid fa-globe"></i></span> Waktu Lokal Pengiriman</h2><p>Jam setempat dihitung dari koordinat tiap lokasi, dibandingkan dengan waktu perangkat Anda.</p></div></div>
+        <div class="wg" id="clockGrid"><div class="skl"></div><div class="skl"></div><div class="skl"></div></div>
+    </section>
 
-
-        {{-- PETA + TIMELINE --}}
-        <div class="duo">
-            <section class="panel">
-                <div class="ph">
-                    <h3><i class="fa-solid fa-map-location-dot"></i> Peta perjalanan</h3>
-                    <p>Klik titik di peta atau di riwayat untuk melihat detail lokasinya.</p>
-                </div>
-
-                <div class="mapbox">
-                    <div id="shipment-map"></div>
-
-                    <div class="map-note" id="mapNote" hidden></div>
-                </div>
-            </section>
-
-            <section class="panel">
-                <div class="ph">
-                    <h3><i class="fa-solid fa-clock-rotate-left"></i> Riwayat perjalanan</h3>
-                    <p>Dari pembaruan terbaru ke yang paling awal.</p>
-                </div>
-
-                <div class="tl-wrap">
-                    <div class="tl">
-                        @forelse($trackingEvents->reverse()->values() as $i => $event)
-                            @php
-                                $es = strtoupper($event->status ?? '');
-                                $hasGeo = is_numeric($event->latitude) && is_numeric($event->longitude);
-                            @endphp
-
-                            <div class="tl-i {{ $i === 0 ? 'latest' : '' }} {{ $hasGeo ? 'has-geo' : '' }}"
-                                 @if($hasGeo) data-lat="{{ (float) $event->latitude }}" data-lng="{{ (float) $event->longitude }}" tabindex="0" role="button" @endif>
-                                <i class="fa-solid fa-check"></i>
-                                <div>
-                                    <b>
-                                        {{ $statusLabels[$es] ?? ($es ?: 'Pembaruan pengiriman') }}
-                                        @if($i === 0)<em>Terbaru</em>@endif
-                                    </b>
-                                    <p><i class="fa-solid fa-location-dot"></i> {{ $event->location ?: 'Lokasi belum tersedia' }}</p>
-                                    @if($event->description)<p>{{ $event->description }}</p>@endif
-                                    <small><i class="fa-regular fa-clock"></i> {{ $formatDate($event->event_time) }}</small>
-                                    @if($hasGeo)<span class="geo"><i class="fa-solid fa-crosshairs"></i> Lihat di peta</span>@endif
-                                </div>
-                            </div>
-                        @empty
-                            <div class="empty">
-                                <i class="fa-solid fa-clock"></i>
-                                <strong>Belum ada riwayat</strong>
-                                Pembaruan akan muncul setelah barang mulai diproses.
-                            </div>
-                        @endforelse
-                    </div>
-                </div>
-            </section>
-        </div>
-
-
-        {{-- ETA & KETERLAMBATAN --}}
-        <section class="panel sect">
-            <div class="ph">
-                <h3><i class="fa-solid fa-calendar-check"></i> Estimasi tiba</h3>
-                <p>Perkiraan kedatangan berdasarkan jadwal yang tercatat.</p>
-            </div>
-
-            <div class="eta-grid">
-                <div class="eta-box">
-                    <small>Estimasi waktu tiba</small>
-                    <strong>{{ $formatDate($eta, 'd M Y') }}</strong>
-                </div>
-                <div class="eta-box">
-                    <small>Status pengiriman</small>
-                    <strong>{{ $statusLabel }}</strong>
-                </div>
-                <div class="eta-box">
-                    <small>{{ $isDelayed ? 'Durasi keterlambatan' : 'Sisa waktu' }}</small>
-                    <strong>
-                        @if($isDelayed)
-                            {{ $delayHours }} jam
-                        @elseif($currentStatus === 'DELIVERED')
-                            Sudah tiba
-                        @else
-                            {{ $remainingLabel ?? 'Belum dihitung' }}
-                        @endif
-                    </strong>
-                </div>
-            </div>
-
-            @if($isDelayed)
-                <div class="box-alert err">
-                    <strong><i class="fa-solid fa-triangle-exclamation"></i> Pengiriman terlambat</strong>
-                    <p style="margin-top:6px">
-                        @if($delayHours > 0)Estimasi tiba sudah terlewati sekitar {{ $delayHours }} jam.@else Pengiriman ini ditandai terlambat.@endif
-                        Tingkat keterlambatan:
-                        <span class="sev sev-{{ strtolower($delaySeverity ?? 'low') }}">{{ $delaySeverity ?? 'LOW' }}</span>
-                    </p>
-                    <p style="margin-top:6px">Lihat bagian Kendala pengiriman di bawah untuk mengetahui penyebabnya.</p>
-                </div>
-            @elseif($currentStatus === 'DELIVERED')
-                <div class="box-alert ok"><i class="fa-solid fa-circle-check"></i> Pengiriman sudah terkirim ke tujuan.</div>
-            @else
-                <div class="box-alert ok"><i class="fa-solid fa-circle-info"></i> Belum ada keterlambatan berdasarkan estimasi yang tercatat. Estimasi bukan jaminan waktu kedatangan.</div>
-            @endif
-        </section>
-
-
-        {{-- KENDALA --}}
-        <section class="panel sect">
-            <div class="ph">
-                <h3><i class="fa-solid fa-triangle-exclamation"></i> Kendala pengiriman</h3>
-                <p>Masalah yang tercatat pada pengiriman ini.</p>
-            </div>
-
-            @forelse($exceptions as $exception)
-                @php
-                    $sev = strtoupper($exception->severity ?? 'LOW');
-                    $isResolved = strtoupper($exception->status ?? '') === 'RESOLVED';
-                @endphp
-
-                <div class="ex {{ $isResolved ? 'resolved' : '' }}">
-                    <div class="ex-top">
-                        <strong>{{ str_replace('_', ' ', $exception->type ?? 'Pengecualian') }}</strong>
-                        <div>
-                            <span class="sev sev-{{ strtolower($sev) }}">{{ $sev }}</span>
-                            <span class="status {{ $isResolved ? 'status-delivered' : 'status-delayed' }}">{{ $isResolved ? 'Selesai' : 'Terbuka' }}</span>
-                        </div>
-                    </div>
-
-                    <dl>
-                        <div><dt>Lokasi</dt><dd>{{ $exception->location ?: 'Belum tersedia' }}</dd></div>
-                        <div><dt>Waktu terdeteksi</dt><dd>{{ $formatDate($exception->occurred_at ?? $exception->created_at) }}</dd></div>
-                        <div><dt>Deskripsi</dt><dd class="full">{{ $exception->description ?: 'Belum ada deskripsi.' }}</dd></div>
-                        <div><dt>Penyebab</dt><dd class="full">{{ $exception->cause ?: 'Belum ada informasi penyebab.' }}</dd></div>
-                        @if($exception->resolved_at)
-                            <div><dt>Waktu penyelesaian</dt><dd>{{ $formatDate($exception->resolved_at) }}</dd></div>
-                        @endif
-                    </dl>
-                </div>
-            @empty
-                <div class="empty good">
-                    <i class="fa-solid fa-circle-check"></i>
-                    <strong>Tidak ada kendala</strong>
-                    Perjalanan barang Anda berjalan tanpa masalah yang tercatat.
-                </div>
-            @endforelse
-        </section>
-
-
-        <div class="acts">
-            <a href="{{ route('customer.pengiriman.index', ['detail' => $shipment->id]) }}" class="btn"><i class="fa-solid fa-box"></i> Lihat detail pengiriman</a>
-            <a href="{{ route('customer.pelacakan.index') }}" class="btn btn-light"><i class="fa-solid fa-rotate-left"></i> Cari resi lain</a>
-        </div>
-
-    @elseif($trackingNumber === '')
-
-        <section class="panel start">
-            <div class="empty">
-                <i class="fa-solid fa-truck-fast"></i>
-                <strong>Mulai lacak pengiriman Anda</strong>
-                Ketik nomor resi di atas, atau pilih salah satu pengiriman terbaru.
-            </div>
-        </section>
-
+    <div class="acts">
+        <a href="{{ route('customer.pengiriman.index', ['detail' => $selected['id']]) }}" class="btn"><i class="fa-solid fa-box"></i> Lihat detail pengiriman</a>
+        <a href="{{ route('customer.pelacakan.index') }}" class="btn btn-light"><i class="fa-solid fa-rotate-left"></i> Cari resi lain</a>
+    </div>
     @endif
 
-    <footer class="footer">
-        © {{ date('Y') }} CargoTrace. Sistem Informasi Pelacakan Pengiriman.
-    </footer>
+    <footer class="footer">© {{ date('Y') }} CargoTrace. Sistem Informasi Pelacakan Pengiriman.</footer>
 
 </section>
 </main>
 
+@if($selected)
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-@if($shipment)
 <script>
-(function () {
-    var points = @json($mapPoints);
+const S = @json($selected);
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const STL = { CREATED:'Dibuat', BOOKED:'Dijadwalkan', PICKED_UP:'Telah Dijemput', IN_TRANSIT:'Dalam Perjalanan', DELIVERED:'Terkirim', DELAYED:'Terlambat' };
+const lbl = v => STL[String(v || '').toUpperCase()] || esc(String(v || '').replace(/_/g, ' '));
+const p2 = n => String(n).padStart(2, '0');
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const fetchT = (u, ms = 7000) => { const c = new AbortController(), t = setTimeout(() => c.abort(), ms); return fetch(u, { signal:c.signal }).finally(() => clearTimeout(t)); };
 
-    function esc(v) {
-        return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) {
-            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[c];
-        });
-    }
+const VEH = { udara:{ name:'Pesawat', icon:'fa-plane', color:'#2563eb' }, laut:{ name:'Kapal', icon:'fa-ship', color:'#0f9d9a' }, darat:{ name:'Truk', icon:'fa-truck-fast', color:'#f59e0b' } };
+const GEO = (() => { try { return JSON.parse(localStorage.getItem('ct_geo') || '{}'); } catch (_) { return {}; } })();
+const saveGeo = () => { try { localStorage.setItem('ct_geo', JSON.stringify(GEO)); } catch (_) {} };
 
-    // Animasi garis perjalanan
-    var track = document.querySelector('.track');
-    var p = parseFloat(track.dataset.progress) || 0;
-    requestAnimationFrame(function () {
-        setTimeout(function () {
-            document.getElementById('fill').style.width = p + '%';
-            document.getElementById('vehicle').style.left = p + '%';
-        }, 150);
-    });
+/* ===== WAKTU: dihitung dari offset UTC koordinat itu sendiri ===== */
+const fmtClock = off => { const d = new Date(Date.now() + off * 1000); return p2(d.getUTCHours()) + ':' + p2(d.getUTCMinutes()) + ':' + p2(d.getUTCSeconds()); };
+const fmtDate = off => new Intl.DateTimeFormat('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric', timeZone:'UTC' }).format(new Date(Date.now() + off * 1000));
+const utcLabel = off => { const a = Math.abs(off), h = Math.floor(a / 3600), m = Math.round((a % 3600) / 60); return 'UTC' + (off < 0 ? '−' : '+') + p2(h) + ':' + p2(m); };
+const myOff = () => -new Date().getTimezoneOffset() * 60;
+function diffText(off) {
+    const d = (off - myOff()) / 3600;
+    if (Math.abs(d) < 0.01) return 'Sama dengan waktu di perangkat Anda';
+    const a = Math.abs(d), h = Number.isInteger(a) ? a : a.toFixed(1).replace('.', ',');
+    return h + ' jam ' + (d > 0 ? 'lebih cepat' : 'lebih lambat') + ' dari waktu perangkat Anda';
+}
+setInterval(() => {
+    if (document.hidden) return;
+    document.querySelectorAll('.tmk').forEach(e => { e.textContent = fmtClock(+e.dataset.off); });
+    document.querySelectorAll('.tmd').forEach(e => { e.textContent = fmtDate(+e.dataset.off); });
+}, 1000);
 
-    // Tombol salin resi
-    var copyBtn = document.getElementById('copyBtn');
-    copyBtn.addEventListener('click', function () {
-        var text = document.getElementById('resi').textContent.trim();
-        var done = function () {
-            copyBtn.querySelector('span').textContent = 'Tersalin';
-            setTimeout(function () { copyBtn.querySelector('span').textContent = 'Salin'; }, 1600);
-        };
-        if (navigator.clipboard) { navigator.clipboard.writeText(text).then(done); }
-    });
-
-    // Peta
-    var map = L.map('shipment-map', { scrollWheelZoom: false }).setView([-2.5, 118], 4);
-
-    var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
-
-    var sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        maxZoom: 19,
-        attribution: 'Tiles &copy; Esri'
-    });
-
-    L.control.layers({ 'Peta': osm, 'Satelit': sat }, null, { position: 'topright' }).addTo(map);
-    L.control.scale({ imperial: false }).addTo(map);
-
-    map.on('click', function () { map.scrollWheelZoom.enable(); });
-
-    var markers = {};
-    setTimeout(function () { map.invalidateSize(); }, 300);
-
-    // ---- Cadangan: jika koordinat GPS belum tersimpan, posisikan dari nama kota ----
-    var geo = {
-        origin: @json($shipment->origin),
-        destination: @json($shipment->destination),
-        last: @json($lastLocation)
-    };
-    var vehicleIcon = '{{ $transport[1] }}';
-    var isLand = '{{ $transport[0] }}' === 'darat';
-
-    // Rute jalan sungguhan dari OpenStreetMap (OSRM). Gagal/antar pulau -> null.
-    function road(pts) {
-        var s = pts.map(function (q) { return q[1] + ',' + q[0]; }).join(';');
-        return fetch('https://router.project-osrm.org/route/v1/driving/' + s + '?overview=full&geometries=geojson')
-            .then(function (r) { return r.json(); })
-            .then(function (j) {
-                if (!j.routes || !j.routes[0]) return null;
-                return j.routes[0].geometry.coordinates.map(function (c) { return [c[1], c[0]]; });
-            })
-            .catch(function () { return null; });
-    }
-
-    function geocode(q) {
-        if (!q) return Promise.resolve(null);
-        var key = 'geo:' + String(q).toLowerCase();
+/* ===== CUACA (Open-Meteo) dengan timeout & fallback bila gagal ===== */
+const cond = (c, day = true) => {
+    if (c === 0) return ['Cerah', day ? '☀️' : '🌙', day ? 'fa-sun' : 'fa-moon'];
+    if (c === 1) return ['Cerah berawan', day ? '🌤️' : '🌙', day ? 'fa-cloud-sun' : 'fa-cloud-moon'];
+    if (c === 2) return ['Berawan sebagian', '⛅', 'fa-cloud-sun'];
+    if (c === 3) return ['Berawan', '☁️', 'fa-cloud'];
+    if (c === 45 || c === 48) return ['Berkabut', '🌫️', 'fa-smog'];
+    if (c >= 51 && c <= 57) return ['Gerimis', '🌦️', 'fa-cloud-rain'];
+    if (c >= 61 && c <= 67) return ['Hujan', '🌧️', 'fa-cloud-showers-heavy'];
+    if ((c >= 71 && c <= 77) || c === 85 || c === 86) return ['Salju', '❄️', 'fa-snowflake'];
+    if (c >= 80 && c <= 82) return ['Hujan lokal', '🌧️', 'fa-cloud-showers-heavy'];
+    if (c >= 95) return ['Badai petir', '⛈️', 'fa-cloud-bolt'];
+    return ['Berawan', '☁️', 'fa-cloud'];
+};
+const WXV = {}, WXP = {};
+const wkey = (lat, lng) => (+lat).toFixed(2) + ',' + (+lng).toFixed(2);
+function infoAt(lat, lng) {
+    const k = wkey(lat, lng);
+    if (WXP[k]) return WXP[k];
+    WXP[k] = (async () => {
         try {
-            var cached = localStorage.getItem(key);
-            if (cached) return Promise.resolve(JSON.parse(cached));
-        } catch (e) {}
-
-        return fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&accept-language=id&q=' + encodeURIComponent(q))
-            .then(function (r) { return r.json(); })
-            .then(function (res) {
-                if (!res || !res.length) return null;
-                var p = [parseFloat(res[0].lat), parseFloat(res[0].lon)];
-                try { localStorage.setItem(key, JSON.stringify(p)); } catch (e) {}
-                return p;
-            })
-            .catch(function () { return null; });
-    }
-
-    function pin(latlng, cls, label, popup) {
-        var size = cls === 'last' ? 34 : 28;
-        var icon = L.divIcon({
-            className: '',
-            html: '<div class="pin ' + cls + '">' + label + '</div>',
-            iconSize: [size, size], iconAnchor: [size / 2, size / 2], popupAnchor: [0, -size / 2]
-        });
-        return L.marker(latlng, { icon: icon }).addTo(map).bindPopup('<div class="pop">' + popup + '</div>');
-    }
-
-    // Garis lengkung antara dua titik (seperti rute penerbangan)
-    function arc(a, b, n) {
-        var mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2;
-        var dx = b[1] - a[1], dy = b[0] - a[0];
-        var c = [mx + dx * 0.18, my - dy * 0.18];
-        var pts = [];
-        for (var i = 0; i <= n; i++) {
-            var t = i / n, u = 1 - t;
-            pts.push([u * u * a[0] + 2 * u * t * c[0] + t * t * b[0], u * u * a[1] + 2 * u * t * c[1] + t * t * b[1]]);
+            const r = await fetchT('https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lng +
+                '&current=temperature_2m,relative_humidity_2m,rain,weather_code,wind_speed_10m,is_day&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=3');
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            const j = await r.json(), c = j.current, d = j.daily;
+            if (!c || !d) throw new Error('empty');
+            return (WXV[k] = { ok:true, t:c.temperature_2m, h:c.relative_humidity_2m, w:c.wind_speed_10m, r:c.rain, c:c.weather_code, day:c.is_day !== 0, off:j.utc_offset_seconds, tz:j.timezone,
+                daily:d.time.map((t, i) => ({ date:t, c:d.weather_code[i], max:d.temperature_2m_max[i], min:d.temperature_2m_min[i] })) });
+        } catch (_) {
+            delete WXP[k];
+            return (WXV[k] = { ok:false, off:Math.round(lng / 15) * 3600, tz:null, approx:true });
         }
-        return pts;
+    })();
+    return WXP[k];
+}
+
+/* ===== GEOKODING (OpenStreetMap Nominatim), dibatasi 1 permintaan/detik ===== */
+let lastNet = 0, gateP = Promise.resolve();
+const gate = () => (gateP = gateP.then(async () => { const w = 1100 - (Date.now() - lastNet); if (w > 0) await sleep(w); lastNet = Date.now(); }));
+async function geocode(name) {
+    if (!name) return null;
+    const k = String(name).toLowerCase().trim();
+    if (k in GEO) return GEO[k];
+    const parts = String(name).split(',').map(x => x.trim()).filter(Boolean);
+    const tries = [name]; if (parts.length > 1) tries.push(parts.slice(-2).join(', '));
+    for (const q of tries) {
+        await gate();
+        try {
+            const r = await fetchT('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&accept-language=id&q=' + encodeURIComponent(q));
+            if (!r.ok) return null;
+            const j = await r.json();
+            if (j && j[0]) { const v = [+j[0].lat, +j[0].lon]; GEO[k] = v; saveGeo(); return v; }
+        } catch (_) { return null; }
     }
+    GEO[k] = null; saveGeo();
+    return null;
+}
 
-    function drawFallback(a, b, c, roadCoords) {
-        var note = document.getElementById('mapNote');
-
-        if (!a && !b && !c) {
-            note.hidden = false;
-            note.textContent = 'Lokasi pada peta belum bisa ditemukan dari nama kota yang tersimpan. Rute akan tampil setelah koordinat tracking tersedia.';
-            return;
-        }
-
-        var all = [];
-        var N = 60;
-        var frac = Math.max(0, Math.min(1, p / 100));
-        var vehiclePos = c;
-
-        if (a && b) {
-            var curve = roadCoords || arc(a, b, N);
-            var cut = Math.round(frac * (curve.length - 1));
-            if (!vehiclePos) vehiclePos = curve[cut];
-
-            L.polyline(curve, { color: '#2457f5', weight: 3, opacity: .3, dashArray: '2 9', lineCap: 'round' }).addTo(map);
-            L.polyline(curve.slice(0, cut + 1), { color: '#2457f5', weight: 4, opacity: .95, lineCap: 'round' }).addTo(map);
-            all = all.concat(curve);
-        }
-
-        if (a) { pin(a, 'first', '<i class="fa-solid fa-play" style="font-size:9px"></i>', '<b>Kota asal</b><p>' + esc(geo.origin) + '</p>'); all.push(a); }
-        if (b) { pin(b, '', '<i class="fa-solid fa-flag-checkered" style="font-size:10px"></i>', '<b>Kota tujuan</b><p>' + esc(geo.destination) + '</p>'); all.push(b); }
-
-        if (vehiclePos) {
-            var vi = L.divIcon({
-                className: '',
-                html: '<div class="vmark"><i class="fa-solid ' + vehicleIcon + '"></i></div>',
-                iconSize: [42, 42], iconAnchor: [21, 21], popupAnchor: [0, -22]
-            });
-            L.marker(vehiclePos, { icon: vi, zIndexOffset: 1000 }).addTo(map)
-                .bindPopup('<div class="pop"><b>Posisi barang</b><p>' + esc(geo.last || 'Perkiraan berdasarkan progres pengiriman') + '</p></div>');
-            all.push(vehiclePos);
-        }
-
-        if (all.length > 1) map.fitBounds(L.latLngBounds(all), { padding: [60, 60] });
-        else map.setView(all[0], 9);
-
-        note.hidden = false;
-        note.textContent = c
-            ? 'Posisi diperkirakan dari nama lokasi terakhir. Koordinat GPS belum tersimpan.'
-            : 'Rute diperkirakan dari kota asal dan tujuan. Posisi barang mengikuti progres pengiriman.';
+/* ===== BLOK HTML CUACA & WAKTU ===== */
+function weatherHtml(i) {
+    if (!i || !i.ok) return '<div class="wph">Data cuaca belum tersedia untuk titik ini.</div>';
+    const c = cond(i.c, i.day);
+    return '<div class="wcur"><span class="ic">' + c[1] + '</span><div><div class="tmp">' + Math.round(i.t) + '°C</div><small>' + c[0] + '</small></div></div>' +
+        '<div class="wm"><div><b>' + i.h + '%</b><small>Lembap</small></div><div><b>' + i.w + '</b><small>km/j angin</small></div><div><b>' + i.r + '</b><small>mm hujan</small></div></div>' +
+        '<div class="fc">' + i.daily.map(d => '<div><small>' + new Date(d.date + 'T00:00:00').toLocaleDateString('id-ID', { weekday:'short', day:'numeric' }) + '</small><span>' + cond(d.c)[1] + '</span><b>' + Math.round(d.max) + '°/' + Math.round(d.min) + '°</b></div>').join('') + '</div>';
+}
+function timeHtml(i, baseOff, baseLabel) {
+    if (!i) return '<div class="wph">Zona waktu belum dapat ditentukan.</div>';
+    let extra = '';
+    if (baseOff !== undefined && baseOff !== null) {
+        const h = (i.off - baseOff) / 3600;
+        extra = '<div class="cdiff">' + (Math.abs(h) < 0.01 ? 'Sama dengan waktu ' + baseLabel : (Number.isInteger(Math.abs(h)) ? Math.abs(h) : Math.abs(h).toFixed(1).replace('.', ',')) + ' jam ' + (h > 0 ? 'lebih cepat' : 'lebih lambat') + ' dari ' + baseLabel) + '</div>';
     }
+    return '<div class="ck tmk" data-off="' + i.off + '">' + fmtClock(i.off) + '</div><div class="cd tmd" data-off="' + i.off + '">' + fmtDate(i.off) + '</div>' +
+        '<span class="cz">' + (i.tz ? esc(i.tz) + ' · ' : '') + utcLabel(i.off) + (i.approx ? ' (perkiraan)' : '') + '</span><div class="cdiff">' + diffText(i.off) + '</div>' + extra;
+}
 
-    if (points.length > 0) {
-        var coords = points.map(function (pt) { return [pt.latitude, pt.longitude]; });
+/* =====================================================================
+   PETA (Leaflet + OpenStreetMap)
+   ===================================================================== */
+const map = L.map('mapMain', { worldCopyJump:true, maxZoom:19, minZoom:2, preferCanvas:true, scrollWheelZoom:false }).setView([2, 110], 4);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution:'&copy; OpenStreetMap contributors', maxNativeZoom:19, maxZoom:19, keepBuffer:2 }).addTo(map);
+L.control.scale({ imperial:false }).addTo(map);
+map.on('click', () => map.scrollWheelZoom.enable());   // scroll zoom aktif setelah peta diklik, supaya scroll halaman tidak terganggu
+const shipLayer = L.layerGroup().addTo(map);
+setTimeout(() => map.invalidateSize(), 250);
 
-        // Garis putus-putus untuk jalur, garis solid untuk bagian yang sudah ditempuh
-        L.polyline(coords, { color: '#2457f5', weight: 4, opacity: .25 }).addTo(map);
-        var line = L.polyline(coords, { color: '#2457f5', weight: 4, opacity: .9, dashArray: '2 9', lineCap: 'round' }).addTo(map);
+const st = { view:'loc' };
+let T = null, EVM = {};
 
-        points.forEach(function (pt, i) {
-            var cls = i === 0 ? 'first' : (i === points.length - 1 ? 'last' : '');
-            var size = cls === 'last' ? 34 : 28;
-            var icon = L.divIcon({
-                className: '',
-                html: '<div class="pin ' + cls + '">' + (i + 1) + '</div>',
-                iconSize: [size, size],
-                iconAnchor: [size / 2, size / 2],
-                popupAnchor: [0, -size / 2]
-            });
+const pin = (color, icon, cls, label, bdg) => L.divIcon({ className:'',
+    html:'<div class="pw"><div class="pin ' + (cls || '') + '" style="background:' + color + '"><i class="fa-solid ' + icon + '"></i></div>' +
+        ((label || bdg) ? '<div class="pl">' + (label ? '<span class="vl">' + esc(label) + '</span>' : '') + (bdg || '') + '</div>' : '') + '</div>',
+    iconSize:[34,34], iconAnchor:[17,17], popupAnchor:[0,-20] });
 
-            var m = L.marker([pt.latitude, pt.longitude], { icon: icon }).addTo(map);
-            m.bindPopup(
-                '<div class="pop"><b>' + esc(pt.status || 'Tracking') + '</b>' +
-                '<p>' + esc(pt.location || 'Lokasi tidak tersedia') + '</p>' +
-                '<p>' + esc(pt.event_time || '-') + '</p>' +
-                (pt.description ? '<p>' + esc(pt.description) + '</p>' : '') + '</div>'
-            );
-
-            markers[pt.latitude + ',' + pt.longitude] = m;
-        });
-
-        if (points.length === 1) {
-            map.setView(coords[0], 10);
-        } else {
-            map.fitBounds(line.getBounds(), { padding: [50, 50] });
-
-            // Jalur darat: ganti garis lurus dengan rute jalan sungguhan
-            if (isLand && coords.length <= 25) {
-                road(coords).then(function (r) {
-                    if (!r) return;
-                    map.removeLayer(line);
-                    var real = L.polyline(r, { color: '#2457f5', weight: 5, opacity: .9, lineCap: 'round' }).addTo(map);
-                    map.fitBounds(real.getBounds(), { padding: [50, 50] });
-                });
-            }
-        }
-    } else {
-        // Berurutan agar tidak melanggar batas permintaan layanan geocoding
-        geocode(geo.origin).then(function (a) {
-            return geocode(geo.destination).then(function (b) {
-                return geocode(geo.last).then(function (c) {
-                    var wantRoad = isLand && a && b;
-                    (wantRoad ? road([a, b]) : Promise.resolve(null)).then(function (r) {
-                        drawFallback(a, b, c, r);
-                    });
-                });
-            });
-        });
+function badge(lat, lng) {
+    if (st.view === 'loc') return '';
+    const w = WXV[wkey(lat, lng)];
+    if (st.view === 'wx') {
+        if (!w) return '<span class="bd dim"><i class="fa-solid fa-spinner fa-spin"></i> cuaca…</span>';
+        if (!w.ok) return '<span class="bd dim">cuaca n/a</span>';
+        const x = cond(w.c, w.day);
+        return '<span class="bd"><i class="fa-solid ' + x[2] + '"></i>' + Math.round(w.t) + '°C <em>' + x[0] + '</em></span>';
     }
+    const off = w ? w.off : Math.round(lng / 15) * 3600;
+    return '<span class="bd"><i class="fa-solid ' + (w && w.ok ? (w.day ? 'fa-sun' : 'fa-moon') : 'fa-clock') + '"></i><span class="tmk" data-off="' + off + '">' + fmtClock(off) + '</span><em>' + utcLabel(off) + '</em></span>';
+}
+function ctxHtml(lat, lng) {
+    const w = WXV[wkey(lat, lng)]; if (!w) return '';
+    const c = w.ok ? cond(w.c, w.day) : null;
+    return '<span style="display:block;margin-top:4px;padding-top:4px;border-top:1px dashed #dce8f8">' + (c ? c[1] + ' ' + c[0] + ', ' + Math.round(w.t) + '°C · angin ' + Math.round(w.w) + ' km/j<br>' : '') +
+        '<i class="fa-regular fa-clock"></i> Waktu lokal <b class="tmk" data-off="' + w.off + '">' + fmtClock(w.off) + '</b> (' + utcLabel(w.off) + ')</span>';
+}
 
-    // Klik riwayat -> peta terbang ke titik tersebut
-    function focusEvent(el) {
-        var key = parseFloat(el.dataset.lat) + ',' + parseFloat(el.dataset.lng);
-        var m = markers[key];
-        if (!m) return;
-        document.getElementById('shipment-map').scrollIntoView({ behavior: 'smooth', block: 'center' });
-        map.flyTo(m.getLatLng(), Math.max(map.getZoom(), 9), { duration: .9 });
-        setTimeout(function () { m.openPopup(); }, 950);
+document.querySelectorAll('#viewGroup .chip').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('#viewGroup .chip').forEach(x => x.classList.toggle('on', x === b));
+    st.view = b.dataset.view;
+    if (T) drawShip(false);
+}));
+
+/* =====================================================================
+   DATA PENGIRIMAN
+   ===================================================================== */
+const kmBetween = (a, b) => { const r = x => x * Math.PI / 180, dl = r(b[0] - a[0]), dn = r(b[1] - a[1]), h = Math.sin(dl / 2) ** 2 + Math.cos(r(a[0])) * Math.cos(r(b[0])) * Math.sin(dn / 2) ** 2; return 12742 * Math.asin(Math.sqrt(h)); };
+function arc(a, b, n) {
+    const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2, dx = b[0] - a[0], dy = b[1] - a[1], cx = mx - dy * .18, cy = my + dx * .18, pts = [];
+    for (let i = 0; i <= n; i++) { const t = i / n, u = 1 - t; pts.push([u*u*a[0] + 2*u*t*cx + t*t*b[0], u*u*a[1] + 2*u*t*cy + t*t*b[1]]); }
+    return pts;
+}
+function timeFrac() {
+    const a = Date.parse(S.etd), b = Date.parse(S.eta);
+    if (isNaN(a) || isNaN(b) || b <= a) return .5;
+    return Math.min(.92, Math.max(.08, (Date.now() - a) / (b - a)));
+}
+async function buildShip(fast) {
+    const veh = VEH[S.mode] || VEH.darat;
+    const evs = (S.events || []).filter(e => e.valid);   // hanya event valid untuk posisi di peta
+    const [o, d] = await Promise.all([S.origin_pos || (fast ? null : geocode(S.origin)), S.dest_pos || (fast ? null : geocode(S.destination))]);
+    const ev = evs.filter(e => e.lat !== null && e.lng !== null).map(e => ({ ll:[e.lat, e.lng], t:e }));
+    const last = evs.length ? evs[evs.length - 1] : null;   // current location = event valid terbaru
+    if (!fast && last && (last.lat === null || last.lng === null) && last.location) { const g = await geocode(last.location); if (g) ev.push({ ll:g, t:last }); }
+    const planned = (o && d) ? arc(o, d, 60) : null;
+    let pos = null, exact = false;
+    if (ev.length) { pos = ev[ev.length - 1].ll; exact = true; }
+    else if (planned) {
+        const f = S.status === 'DELIVERED' ? 1 : S.status === 'IN_TRANSIT' ? timeFrac() : S.status === 'PICKED_UP' ? .05 : 0;
+        pos = planned[Math.round(f * (planned.length - 1))];
+    } else pos = o || d;
+    return { o, d, ev, last, veh, planned, pos, exact };
+}
+function popShip(ll, extra) {
+    const v = T.veh;
+    return '<div class="pop"><strong>' + esc(S.number) + '</strong><span class="veh"><i class="fa-solid ' + v.icon + '"></i> ' + esc(v.name) + (S.vnum ? ' · ' + esc(S.vnum) : '') + '</span><br>Perusahaan: ' + esc(S.carrier || '-') +
+        '<br>Rute: ' + esc(S.origin) + ' → ' + esc(S.destination) + '<br>Status: ' + lbl(S.status) + (S.eta_text ? '<br>ETA: ' + esc(S.eta_text) : '') + (extra || '') + (ll ? ctxHtml(ll[0], ll[1]) : '') + '</div>';
+}
+function drawShip(fit) {
+    if (!T) return;
+    shipLayer.clearLayers(); EVM = {}; T.mo = T.md = T.mp = null;
+    const bounds = [], need = [], delivered = S.status === 'DELIVERED';
+    const bd = ll => { need.push(ll); return badge(ll[0], ll[1]); };
+    if (T.planned) L.polyline(T.planned, { color:'#2f8cf5', weight:3, opacity:.7, dashArray:'7,8' }).bindPopup(popShip(null, '<br><small>Garis rencana rute (bukan jalur aktual).</small>')).addTo(shipLayer);
+    if (T.ev.length > 1) L.polyline(T.ev.map(e => e.ll), { color:'#f59e0b', weight:4, opacity:.95 }).addTo(shipLayer);
+    else if (!T.exact && T.planned && S.status !== 'CREATED' && S.status !== 'BOOKED') {
+        const cut = T.planned.findIndex(p => p === T.pos);
+        if (cut > 0) L.polyline(T.planned.slice(0, cut + 1), { color:'#f59e0b', weight:4, opacity:.95 }).addTo(shipLayer);
     }
-
-    document.querySelectorAll('.tl-i.has-geo').forEach(function (el) {
-        el.addEventListener('click', function () { focusEvent(el); });
-        el.addEventListener('keydown', function (e) {
-            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); focusEvent(el); }
-        });
+    if (T.o) { T.mo = L.marker(T.o, { icon:pin('#2563eb', 'fa-box', '', 'Asal', bd(T.o)) }).bindPopup(popShip(T.o, '<br><b>Titik asal</b>')).addTo(shipLayer); bounds.push(T.o); }
+    if (T.d) { T.md = L.marker(T.d, { icon:pin('#16a34a', 'fa-flag-checkered', '', 'Tujuan', bd(T.d)) }).bindPopup(popShip(T.d, '<br><b>Titik tujuan</b>')).addTo(shipLayer); bounds.push(T.d); }
+    T.ev.forEach(e => {
+        const x = e.t.exception;   // titik exception berwarna merah
+        EVM[e.t.id] = L.circleMarker(e.ll, { radius:x ? 7 : 5, weight:3, color:x ? '#e5484d' : '#2563eb', fillColor:x ? '#ffe9e9' : '#fff', fillOpacity:1 })
+            .bindPopup('<div class="pop"><strong>' + esc(S.number) + '</strong>' + (x ? '<span class="xtag"><i class="fa-solid fa-triangle-exclamation"></i> Exception</span><br>' : '') + 'Lokasi: ' + esc(e.t.location || '-') + '<br>Status: ' + lbl(e.t.status) + (e.t.desc ? '<br>' + esc(e.t.desc) : '') + '<br><small>' + esc(e.t.time_text || '') + '</small></div>').addTo(shipLayer);
+        bounds.push(e.ll);
     });
+    if (T.pos && !delivered) {
+        T.mp = L.marker(T.pos, { icon:pin(T.veh.color, T.veh.icon, 'big fleet', T.veh.name + (S.vnum ? ' ' + S.vnum : ''), bd(T.pos)), zIndexOffset:900 })
+            .bindPopup(popShip(T.pos, T.exact ? '<br><b>Posisi terakhir tercatat</b>' : '<br><small>Posisi diperkirakan di sepanjang rute.</small>')).addTo(shipLayer);
+        bounds.push(T.pos);
+    }
+    T.bounds = bounds;
+    if (fit && bounds.length) { if (bounds.length === 1) map.setView(bounds[0], 11); else map.fitBounds(bounds, { padding:[70,70], maxZoom:12 }); }
+    const fresh = need.filter(p => !WXV[wkey(p[0], p[1])]);
+    if (st.view !== 'loc' && fresh.length) Promise.all(fresh.map(p => infoAt(p[0], p[1]))).then(() => { if (st.view !== 'loc') drawShip(false); });
+}
+function legend() {
+    const v = T.veh;
+    $('mapInfo').innerHTML = '<span><i class="d" style="background:#2563eb"></i> Asal</span><span><i class="d" style="background:#16a34a"></i> Tujuan</span>' +
+        '<span><i class="fa-solid ' + v.icon + '" style="color:' + v.color + '"></i> ' + v.name + (S.vnum ? ' ' + esc(S.vnum) : '') + '</span>' +
+        '<span><i class="ln"></i> Sudah dilalui</span><span><i class="ln ds"></i> Rencana rute</span>' +
+        '<span><i class="d" style="background:#e5484d"></i> Titik exception</span>';
+}
+function flyOpen(ll, marker) {
+    if (!ll) return;
+    map.flyTo(ll, Math.max(map.getZoom(), 11), { duration:1 });
+    if (marker) setTimeout(() => marker.openPopup(), 1050);
+}
+
+(async function () {
+    const events = S.events || [], delivered = S.status === 'DELIVERED', D = S.delay;
+    const cur = S.current;   // event valid terbaru (dihitung di server)
+    const durM = mn => { const m = Math.floor(Math.abs(mn)), d = Math.floor(m / 1440), h = Math.floor(m % 1440 / 60), mi = m % 60; return d > 0 ? d + ' hari ' + h + ' jam' : (h > 0 ? h + ' jam ' + mi + ' menit' : mi + ' menit'); };
+    const ago = iso => { const m = Math.floor((Date.now() - new Date(iso).getTime()) / 60000); return m < 1 ? 'baru saja' : m < 60 ? m + ' menit lalu' : m < 1440 ? Math.floor(m / 60) + ' jam lalu' : Math.floor(m / 1440) + ' hari lalu'; };
+
+    /* LOKASI TERAKHIR (dari event valid terbaru) */
+    if (!events.length) $('lastLoc').innerHTML = '<div class="nodata"><i class="fa-solid fa-location-pin-lock"></i>Belum ada data pelacakan tercatat untuk pengiriman ini.</div>';
+    else if (!cur) $('lastLoc').innerHTML = '<div class="nodata"><i class="fa-solid fa-circle-exclamation"></i>Belum ada event dengan lokasi yang lengkap.</div>';
+    else {
+        $('lastLoc').innerHTML = '<div class="icb ' + (cur.exception ? 'bad' : 'info') + '"><i class="fa-solid ' + (cur.exception ? 'fa-triangle-exclamation' : 'fa-location-dot') + '"></i></div><div class="big">' + esc(cur.location || 'Lokasi tidak tercatat') + '</div>' +
+            '<div class="sub">' + lbl(cur.status) + ' · ' + esc(cur.time_text) + (cur.time ? ' (' + ago(cur.time) + ')' : '') + '</div>' + (cur.desc ? '<div class="sub">' + esc(cur.desc) + '</div>' : '') +
+            '<div class="mini">' + (cur.lat !== null ? '<span>' + cur.lat.toFixed(4) + ', ' + cur.lng.toFixed(4) + '</span>' : '<span>Koordinat belum tercatat</span>') + '</div>';
+    }
+
+    /* ETA + KETERLAMBATAN (aturan dihitung di server, ditampilkan beserta nilai yang dipakai) */
+    (function renderEta() {
+        const eta = S.eta ? new Date(S.eta).getTime() : null, etd = S.etd ? new Date(S.etd).getTime() : null;
+        let pct = delivered ? 100 : 0;
+        if (!delivered && eta && etd && eta > etd) pct = Math.max(0, Math.min(100, (Date.now() - etd) / (eta - etd) * 100));
+        const sub = delivered ? 'Barang sudah diterima.' : !eta ? 'Jadwal tiba belum diisi.' : (D.is_delayed && D.late_minutes > 0 ? 'Melewati ETA ' + durM(D.late_minutes) + ' yang lalu.' : (D.remaining_minutes !== null ? 'Tiba dalam ' + durM(D.remaining_minutes) + '.' : 'Menunggu pembaruan.'));
+        $('etaBox').innerHTML = '<div class="icb info"><i class="fa-solid fa-calendar-check"></i></div><div class="big">' + esc(S.eta_text) + '</div><div class="sub">' + sub + '</div><div class="bar"><i style="width:' + pct.toFixed(0) + '%"></i></div>' +
+            '<div class="mini"><span>Berangkat ' + esc(S.etd_text) + '</span>' + (etd && eta && eta > etd ? '<span>Durasi ' + durM((eta - etd) / 60000) + '</span>' : '') + '<span>' + pct.toFixed(0) + '% perjalanan</span></div>' +
+            '<div class="note">Estimasi bukan jaminan waktu kedatangan.</div>';
+
+        let cls = 'ok', icon = 'fa-circle-check', head = 'Tepat waktu', text = eta ? 'Belum melewati estimasi tiba.' : 'Estimasi tiba belum diisi.', sevHtml = '', rule = '';
+        if (delivered) { head = 'Sudah diterima'; text = 'Pengiriman telah selesai, tidak ada keterlambatan aktif.'; }
+        else if (D.is_delayed) {
+            const lowCls = 'sev sev-' + String(D.severity || 'LOW').toLowerCase();
+            sevHtml = ' <span class="' + lowCls + '">' + esc(D.severity || 'LOW') + '</span>';
+            if (D.late_minutes > 0) {
+                cls = D.severity === 'LOW' ? 'warn' : 'bad'; icon = 'fa-triangle-exclamation'; head = 'Terlambat ' + durM(D.late_minutes);
+                text = 'Barang belum tiba setelah estimasi tiba ' + S.eta_text + '.';
+                rule = '<div class="rule"><b>Nilai yang dipakai:</b> keterlambatan ' + durM(D.late_minutes) + ' (' + (D.late_minutes / 60).toFixed(1).replace('.', ',') + ' jam) terhadap ETA.<br><b>Aturan:</b> 0–' + D.low_max + ' jam LOW, &gt;' + D.low_max + '–' + D.medium_max + ' jam MEDIUM, &gt;' + D.medium_max + ' jam HIGH.</div>';
+            } else { cls = 'warn'; icon = 'fa-clock'; head = 'Pengiriman tertunda'; text = 'Status pengiriman ditandai Terlambat (DELAYED).'; }
+        }
+        $('delayBox').innerHTML = '<div class="icb ' + cls + '"><i class="fa-solid ' + icon + '"></i></div><div class="big">' + head + sevHtml + '</div><div class="sub">' + text + '</div>' + rule +
+            (D.is_delayed ? '<div class="cause ' + (S.delay_cause ? '' : 'n') + '"><b>Penyebab:</b> ' + (S.delay_cause ? esc(S.delay_cause) : 'Belum dicatat pada riwayat tracking.') + '</div>' : '');
+    })();
+
+    /* TIMELINE: kronologis (lama → baru) default, bisa dibalik; filter normal / exception */
+    const tl = { sort:'asc', f:'all' };
+    function renderTimeline() {
+        const nExc = S.events_exception || 0, nAll = events.length;
+        let list = events.filter(e => tl.f === 'all' || (tl.f === 'exc' ? e.exception : !e.exception));
+        if (tl.sort === 'desc') list = list.slice().reverse();
+
+        $('tlTools').innerHTML =
+            '<div class="tl-tools">' +
+                '<button type="button" class="chip' + (tl.f === 'all' ? ' on' : '') + '" data-f="all">Semua (' + nAll + ')</button>' +
+                '<button type="button" class="chip' + (tl.f === 'nor' ? ' on' : '') + '" data-f="nor"><i class="fa-solid fa-circle-check"></i> Normal (' + (nAll - nExc) + ')</button>' +
+                '<button type="button" class="chip' + (tl.f === 'exc' ? ' on' : '') + '" data-f="exc"><i class="fa-solid fa-triangle-exclamation"></i> Exception (' + nExc + ')</button>' +
+                '<span class="sp"></span>' +
+                '<button type="button" class="chip" id="tlSort"><i class="fa-solid ' + (tl.sort === 'asc' ? 'fa-arrow-down-1-9' : 'fa-arrow-up-9-1') + '"></i> ' + (tl.sort === 'asc' ? 'Lama → Baru' : 'Baru → Lama') + '</button>' +
+            '</div>' +
+            '<div class="tl-sum">Menampilkan <b>' + list.length + '</b> dari <b>' + nAll + '</b> event' + (S.events_total > nAll ? ' (terbaru dari total ' + S.events_total + ')' : '') + '.</div>';
+
+        $('timeline').innerHTML = !nAll
+            ? '<div class="nodata"><i class="fa-solid fa-route"></i>Belum ada riwayat perjalanan. Riwayat muncul setelah pembaruan pertama dicatat.</div>'
+            : !list.length
+                ? '<div class="nodata"><i class="fa-solid fa-filter-circle-xmark"></i>Tidak ada event pada filter ini.</div>'
+                : '<div class="tl">' + list.map(e => {
+                    const tags = [];
+                    tags.push(e.exception ? '<span class="tag x"><i class="fa-solid fa-triangle-exclamation"></i> Exception</span>' : '<span class="tag n"><i class="fa-solid fa-circle-check"></i> Normal</span>');
+                    if (e.is_current) tags.push('<span class="tag c"><i class="fa-solid fa-location-dot"></i> Lokasi saat ini</span>');
+                    const geo = e.valid && e.lat !== null;
+                    if (geo) tags.push('<span class="tag g"><i class="fa-solid fa-crosshairs"></i> Lihat di peta</span>');
+                    return '<div class="ti' + (e.is_current ? ' cur' : '') + (e.exception ? ' exc' : '') + (geo ? ' geo' : '') + '"' + (geo ? ' data-id="' + e.id + '" tabindex="0" role="button"' : '') + '><b>' + lbl(e.status) + '</b><span class="loc">' + esc(e.location || '-') + '</span>' +
+                        (e.desc ? '<small>' + esc(e.desc) + '</small>' : '') +
+                        '<small>' + esc(e.time_text) + (e.lat !== null ? ' · ' + e.lat.toFixed(4) + ', ' + e.lng.toFixed(4) : '') + '</small>' +
+                        '<div class="tags">' + tags.join('') + '</div></div>';
+                }).join('') + '</div>';
+
+        document.querySelectorAll('#tlTools [data-f]').forEach(b => b.addEventListener('click', () => { tl.f = b.dataset.f; renderTimeline(); }));
+        $('tlSort').addEventListener('click', () => { tl.sort = tl.sort === 'asc' ? 'desc' : 'asc'; renderTimeline(); });
+        document.querySelectorAll('#timeline .ti.geo').forEach(el => {
+            const go = () => { const m = EVM[el.dataset.id]; if (!m) return; $('peta').scrollIntoView({ behavior:'smooth', block:'center' }); flyOpen(m.getLatLng(), m); };
+            el.addEventListener('click', go);
+            el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+        });
+        const w = $('timeline');
+        w.scrollTop = tl.sort === 'asc' ? w.scrollHeight : 0;   // selalu tampilkan sisi event terbaru
+    }
+    renderTimeline();
+
+    /* KARTU CUACA & WAKTU: asal, lokasi saat ini, tujuan */
+    let geoTok = 0;
+    function renderGeoCards() {
+        const tok = ++geoTok;
+        const atPos = T.ev.length ? T.ev[T.ev.length - 1].ll : (delivered ? T.d : (S.status === 'CREATED' || S.status === 'BOOKED') ? T.o : T.pos);
+        const places = [
+            { title:'LOKASI ASAL', icon:'fa-box', color:'#2563eb', name:S.origin, ll:T.o },
+            { title:delivered ? 'LOKASI TERAKHIR' : 'LOKASI SAAT INI', icon:'fa-truck-fast', color:'#f59e0b', name:T.last ? (T.last.location || 'Titik tracking terakhir') : (atPos ? (T.exact || delivered ? 'Lokasi terakhir' : 'Perkiraan posisi di sepanjang rute') : null), ll:atPos },
+            { title:'LOKASI TUJUAN', icon:'fa-flag-checkered', color:'#16a34a', name:S.destination, ll:T.d }
+        ];
+        const hd = p => '<div class="wt"><span class="wi" style="background:' + p.color + '"><i class="fa-solid ' + p.icon + '"></i></span>' + p.title + '</div><div class="wn">' + esc(p.name || 'Belum tercatat') + '</div>';
+        const miss = p => '<div class="wph">' + (p.name ? 'Koordinat lokasi tidak ditemukan.' : 'Belum ada lokasi yang tercatat.') + '</div>';
+        const skel = p => p.ll ? '<div class="skl"></div>' : miss(p);
+        $('weatherGrid').innerHTML = places.map((p, n) => '<div class="wc" id="wx' + n + '">' + hd(p) + skel(p) + '</div>').join('');
+        $('clockGrid').innerHTML = places.map((p, n) => '<div class="wc dark" id="ck' + n + '">' + hd(p) + skel(p) + '</div>').join('');
+        const get = p => p.ll ? infoAt(p.ll[0], p.ll[1]) : Promise.resolve(null);
+        const baseP = get(places[0]);
+        places.forEach((p, n) => {
+            if (!p.ll) return;
+            get(p).then(i => { if (tok === geoTok) $('wx' + n).innerHTML = hd(p) + weatherHtml(i); });
+            Promise.all([get(p), baseP]).then(([i, b]) => { if (tok === geoTok) $('ck' + n).innerHTML = hd(p) + timeHtml(i, n > 0 && b ? b.off : null, 'lokasi asal'); });
+        });
+    }
+
+    /* PETA: tampil instan dari koordinat yang ada; geocoding yang lambat jalan di latar belakang */
+    T = await buildShip(true);
+    legend(); drawShip(true); renderGeoCards();
+    document.querySelectorAll('#jumpGroup .chip').forEach(b => b.addEventListener('click', () => {
+        const j = b.dataset.j;
+        if (j === 'all') { if (T.bounds.length) map.fitBounds(T.bounds, { padding:[70,70], maxZoom:12 }); return; }
+        const ll = j === 'o' ? T.o : j === 'd' ? T.d : T.pos, mk = j === 'o' ? T.mo : j === 'd' ? T.md : T.mp;
+        if (!ll) { $('tmsg').textContent = 'Titik itu belum diketahui.'; return; }
+        $('tmsg').textContent = '';
+        flyOpen(ll, mk);
+    }));
+    const finish = () => { $('tmsg').textContent = T.bounds.length ? '' : 'Lokasi pengiriman belum ditemukan di peta.'; };
+    const missing = (!T.o && S.origin) || (!T.d && S.destination) || (T.last && (T.last.lat === null || T.last.lng === null) && T.last.location && !T.ev.some(x => x.t === T.last));
+    if (missing) {
+        $('tmsg').textContent = 'Mencari koordinat lokasi…';
+        buildShip(false).then(t => { T = t; legend(); drawShip(true); renderGeoCards(); finish(); });
+    } else finish();
 })();
 </script>
 @endif

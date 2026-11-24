@@ -22,6 +22,7 @@ class Shipment extends Model
         'destination',
         'estimated_departure',
         'estimated_arrival',
+        'expected_arrival',
         'status',
         'notes',
     ];
@@ -31,7 +32,18 @@ class Shipment extends Model
         'volume' => 'decimal:2',
         'estimated_departure' => 'datetime',
         'estimated_arrival' => 'datetime',
+        'expected_arrival' => 'datetime',
     ];
+
+    protected static function booted(): void
+    {
+        // Jadwal kedatangan yang dijanjikan (expected) default-nya sama dengan ETA awal.
+        static::creating(function (Shipment $shipment) {
+            if (empty($shipment->expected_arrival) && ! empty($shipment->estimated_arrival)) {
+                $shipment->expected_arrival = $shipment->estimated_arrival;
+            }
+        });
+    }
 
     // Pemilik pengiriman
     public function user(): BelongsTo

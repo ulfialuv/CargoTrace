@@ -398,243 +398,251 @@ Route::patch('/profil/alamat/{id}/utama', [
 
     /*
     |--------------------------------------------------------------------------
-    | DASHBOARD UMUM
+    | HALAMAN ADMINISTRATOR
     |--------------------------------------------------------------------------
+    | Seluruh route di bawah ini hanya untuk Administrator.
+    | Operator dan Customer punya route sendiri (prefix operator/ dan customer/).
+    | Dicek di server lewat RoleMiddleware, bukan hanya menyembunyikan menu.
     */
-
-    Route::get('/dashboard', [DashboardController::class, 'index'])
-        ->name('dashboard');
-
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | PENGIRIMAN UMUM
-    |--------------------------------------------------------------------------
-    */
-
-    Route::prefix('pengiriman')
-        ->name('pengiriman.')
-        ->group(function () {
-
-            Route::get('/', [PengirimanController::class, 'index'])
-                ->name('index');
-
-            Route::get('/create', [PengirimanController::class, 'create'])
-                ->name('create');
-
-            Route::post('/', [PengirimanController::class, 'store'])
-                ->name('store');
-
-            Route::get('/{id}/edit', [PengirimanController::class, 'edit'])
-                ->name('edit');
-
-            Route::put('/{id}', [PengirimanController::class, 'update'])
-                ->name('update');
-
-            Route::delete('/{id}', [PengirimanController::class, 'destroy'])
-                ->name('destroy');
-
-            Route::get('/{id}', [PengirimanController::class, 'show'])
-                ->name('show');
-
-        });
-
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | PELACAKAN UMUM
-    |--------------------------------------------------------------------------
-    */
-
-    Route::get('/pelacakan', [PelacakanController::class, 'index'])
-        ->name('pelacakan.index');
-
-    Route::get('/pelacakan/{shipment}', [PelacakanController::class, 'show'])
-        ->name('pelacakan.show');
-
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | FASILITAS DAN LOKASI
-    |--------------------------------------------------------------------------
-    */
-
-    Route::prefix('fasilitas')
-        ->name('fasilitas.')
-        ->group(function () {
-
-            Route::get('/', [FasilitasController::class, 'index'])
-                ->name('index');
-
-            Route::get('/create', [FasilitasController::class, 'create'])
-                ->name('create');
-
-            Route::post('/', [FasilitasController::class, 'store'])
-                ->name('store');
-
-            Route::get('/{fasilita}/edit', [FasilitasController::class, 'edit'])
-                ->name('edit');
-
-            Route::put('/{fasilita}', [FasilitasController::class, 'update'])
-                ->name('update');
-
-            Route::delete('/{fasilita}', [FasilitasController::class, 'destroy'])
-                ->name('destroy');
-
-            Route::get('/{fasilita}', [FasilitasController::class, 'show'])
-                ->name('show');
-
-        });
-
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | PERUSAHAAN PENGIRIMAN
-    |--------------------------------------------------------------------------
-    */
-
-    Route::resource('perusahaan-pengiriman', CarrierController::class)
-        ->names('carriers');
-
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | PENGECUALIAN ADMIN / UMUM
-    |--------------------------------------------------------------------------
-    */
-
-    Route::resource('pengecualian', ShipmentExceptionController::class)
-        ->names('exceptions');
-
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | PENGGUNA DAN HAK AKSES
-    |--------------------------------------------------------------------------
-    */
-
-    Route::resource('pengguna', UserController::class)
-        ->names('users');
-
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | BERITA
-    |--------------------------------------------------------------------------
-    */
-
-    Route::get('/berita', [BeritaController::class, 'index'])
-        ->name('berita.index');
-
-    Route::get('/berita/api', [BeritaController::class, 'api'])
-        ->name('berita.api');
-
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | CUACA
-    |--------------------------------------------------------------------------
-    */
-
-    Route::get('/cuaca', function () {
-        return view('cuaca.index');
-    })->name('cuaca.index');
-
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | MATA UANG
-    |--------------------------------------------------------------------------
-    */
-
-    Route::prefix('mata-uang')
-        ->name('mata-uang.')
-        ->group(function () {
-
-            Route::get('/', [MataUangController::class, 'index'])
-                ->name('index');
-
-            Route::get('/currencies', [MataUangController::class, 'currencies'])
-                ->name('currencies');
-
-            Route::get('/api', [MataUangController::class, 'api'])
-                ->name('api');
-
-            Route::get('/convert', [MataUangController::class, 'convert'])
-                ->name('convert');
-
-        });
-
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | WAKTU DUNIA
-    |--------------------------------------------------------------------------
-    */
-
-    Route::prefix('waktu')
-        ->name('waktu.')
-        ->group(function () {
-
-            Route::get('/', [WaktuController::class, 'index'])
-                ->name('index');
-
-            Route::get('/locations', [WaktuController::class, 'locations'])
-                ->name('locations');
-
-            Route::get('/time', [WaktuController::class, 'time'])
-                ->name('time');
-
-            Route::get('/convert', [WaktuController::class, 'convert'])
-                ->name('convert');
-
-        });
-
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | NOTIFIKASI UMUM
-    |--------------------------------------------------------------------------
-    */
-
-    Route::prefix('notifikasi')
-        ->name('notifications.')
-        ->group(function () {
-
-            Route::get('/', [NotificationController::class, 'index'])
-                ->name('index');
-
-            Route::patch('/read-all', [NotificationController::class, 'markAllRead'])
-                ->name('readAll');
-
-            Route::patch('/{id}/read', [NotificationController::class, 'markRead'])
-                ->name('read');
-
-            Route::delete('/{id}', [NotificationController::class, 'destroy'])
-                ->name('destroy');
-
-        });
-
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | AUDIT LOG - KHUSUS ADMINISTRATOR
-    |--------------------------------------------------------------------------
-    */
-
     Route::middleware('role:admin')->group(function () {
+
+        /*
+        |--------------------------------------------------------------------------
+        | DASHBOARD UMUM
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get('/dashboard', [DashboardController::class, 'index'])
+            ->name('dashboard');
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | PENGIRIMAN UMUM
+        |--------------------------------------------------------------------------
+        */
+
+        Route::prefix('pengiriman')
+            ->name('pengiriman.')
+            ->group(function () {
+
+                Route::get('/', [PengirimanController::class, 'index'])
+                    ->name('index');
+
+                Route::get('/create', [PengirimanController::class, 'create'])
+                    ->name('create');
+
+                Route::post('/', [PengirimanController::class, 'store'])
+                    ->name('store');
+
+                Route::get('/{id}/edit', [PengirimanController::class, 'edit'])
+                    ->name('edit');
+
+                Route::put('/{id}', [PengirimanController::class, 'update'])
+                    ->name('update');
+
+                Route::delete('/{id}', [PengirimanController::class, 'destroy'])
+                    ->name('destroy');
+
+                Route::get('/{id}', [PengirimanController::class, 'show'])
+                    ->name('show');
+
+            });
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | PELACAKAN UMUM
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get('/pelacakan', [PelacakanController::class, 'index'])
+            ->name('pelacakan.index');
+
+        Route::get('/pelacakan/{shipment}', [PelacakanController::class, 'show'])
+            ->name('pelacakan.show');
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | FASILITAS DAN LOKASI
+        |--------------------------------------------------------------------------
+        */
+
+        Route::prefix('fasilitas')
+            ->name('fasilitas.')
+            ->group(function () {
+
+                Route::get('/', [FasilitasController::class, 'index'])
+                    ->name('index');
+
+                Route::get('/create', [FasilitasController::class, 'create'])
+                    ->name('create');
+
+                Route::post('/', [FasilitasController::class, 'store'])
+                    ->name('store');
+
+                Route::get('/{fasilita}/edit', [FasilitasController::class, 'edit'])
+                    ->name('edit');
+
+                Route::put('/{fasilita}', [FasilitasController::class, 'update'])
+                    ->name('update');
+
+                Route::delete('/{fasilita}', [FasilitasController::class, 'destroy'])
+                    ->name('destroy');
+
+                Route::get('/{fasilita}', [FasilitasController::class, 'show'])
+                    ->name('show');
+
+            });
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | PERUSAHAAN PENGIRIMAN
+        |--------------------------------------------------------------------------
+        */
+
+        Route::resource('perusahaan-pengiriman', CarrierController::class)
+            ->names('carriers');
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | PENGECUALIAN ADMIN / UMUM
+        |--------------------------------------------------------------------------
+        */
+
+        Route::resource('pengecualian', ShipmentExceptionController::class)
+            ->names('exceptions');
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | PENGGUNA DAN HAK AKSES
+        |--------------------------------------------------------------------------
+        */
+
+        Route::resource('pengguna', UserController::class)
+            ->names('users');
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | BERITA
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get('/berita', [BeritaController::class, 'index'])
+            ->name('berita.index');
+
+        Route::get('/berita/api', [BeritaController::class, 'api'])
+            ->name('berita.api');
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | CUACA
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get('/cuaca', function () {
+            return view('cuaca.index');
+        })->name('cuaca.index');
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | MATA UANG
+        |--------------------------------------------------------------------------
+        */
+
+        Route::prefix('mata-uang')
+            ->name('mata-uang.')
+            ->group(function () {
+
+                Route::get('/', [MataUangController::class, 'index'])
+                    ->name('index');
+
+                Route::get('/currencies', [MataUangController::class, 'currencies'])
+                    ->name('currencies');
+
+                Route::get('/api', [MataUangController::class, 'api'])
+                    ->name('api');
+
+                Route::get('/convert', [MataUangController::class, 'convert'])
+                    ->name('convert');
+
+            });
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | WAKTU DUNIA
+        |--------------------------------------------------------------------------
+        */
+
+        Route::prefix('waktu')
+            ->name('waktu.')
+            ->group(function () {
+
+                Route::get('/', [WaktuController::class, 'index'])
+                    ->name('index');
+
+                Route::get('/locations', [WaktuController::class, 'locations'])
+                    ->name('locations');
+
+                Route::get('/time', [WaktuController::class, 'time'])
+                    ->name('time');
+
+                Route::get('/convert', [WaktuController::class, 'convert'])
+                    ->name('convert');
+
+            });
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | NOTIFIKASI UMUM
+        |--------------------------------------------------------------------------
+        */
+
+        Route::prefix('notifikasi')
+            ->name('notifications.')
+            ->group(function () {
+
+                Route::get('/', [NotificationController::class, 'index'])
+                    ->name('index');
+
+                Route::patch('/read-all', [NotificationController::class, 'markAllRead'])
+                    ->name('readAll');
+
+                Route::patch('/{id}/read', [NotificationController::class, 'markRead'])
+                    ->name('read');
+
+                Route::delete('/{id}', [NotificationController::class, 'destroy'])
+                    ->name('destroy');
+
+            });
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | AUDIT LOG - KHUSUS ADMINISTRATOR
+        |--------------------------------------------------------------------------
+        */
 
         Route::get('/audit-log', [AuditLogController::class, 'index'])
             ->name('audit-logs.index');
@@ -644,6 +652,7 @@ Route::patch('/profil/alamat/{id}/utama', [
 
         Route::get('/audit-log/{id}', [AuditLogController::class, 'show'])
             ->name('audit-logs.show');
+
 
     });
 

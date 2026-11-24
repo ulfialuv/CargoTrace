@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Shipment;
 use App\Models\ShipmentTracking;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class OperatorShipmentController extends Controller
 {
@@ -18,6 +21,9 @@ class OperatorShipmentController extends Controller
         'DELIVERED',
     ];
 
+    /** Barang baru boleh dijemput (PICKED_UP) kalau pembayaran LUNAS. Set null untuk mematikan aturan ini. */
+    private const PAYMENT_GATE = 'PICKED_UP';
+
     private function shipmentRules(): array
     {
         return [
@@ -28,7 +34,7 @@ class OperatorShipmentController extends Controller
             'weight' => ['required', 'numeric', 'min:0.01'],
             'volume' => ['nullable', 'numeric', 'min:0'],
             'carrier' => ['required', 'string', 'max:255'],
-            'transport_type' => ['required', 'string', 'max:255'],
+            'transport_type' => ['required', Rule::in(['udara', 'laut', 'darat'])],
             'origin' => ['required', 'string', 'max:255'],
             'destination' => ['required', 'string', 'max:255'],
             'estimated_departure' => ['required', 'date'],
@@ -37,10 +43,16 @@ class OperatorShipmentController extends Controller
         ];
     }
 
+    /* ====================================================================
+     * DAFTAR PENGIRIMAN (OPERATOR)
+     * Operator: lihat, tambah, edit, lacak, dan majukan status.
+     * Tidak ada: hapus, refund, buka kembali status terminal, kelola tagihan.
+     * ==================================================================== */
+
     public function index(Request $request)
     {
         $query = Shipment::with([
-            'trackingEvents' => fn ($q) => $q->orderBy('event_time', 'desc')
+            'trackingEvents' => fn ($q) => $q->orderBy('event_time', 'asc'),
         ]);
 
         if ($request->filled('search')) {
@@ -63,26 +75,96 @@ class OperatorShipmentController extends Controller
             $query->where('carrier', $request->carrier);
         }
 
-        $shipments = $query->latest()->paginate(10)->withQueryString();
+        if ($request->filled('origin')) {
+            $query->where('origin', 'like', '%' . $request->origin . '%');
+        }
 
-        $totalShipments = Shipment::count();
-        $createdShipments = Shipment::where('status', 'CREATED')->count();
-        $inTransitShipments = Shipment::where('status', 'IN_TRANSIT')->count();
-        $deliveredShipments = Shipment::where('status', 'DELIVERED')->count();
+        if ($request->filled('destination')) {
+            $query->where('destination', 'like', '%' . $request->destination . '%');
+        }
+
+        if ($request->filled('start_date')) {
+            $query->whereDate('created_at', '>=', $request->start_date);
+        }
+
+        if ($request->filled('end_date')) {
+            $query->whereDate('created_at', '<=', $request->end_date);
+        }
+
+        $shipments = $query->latest()->paginate(10)->withQueryString();
 
         $carriers = Shipment::query()
             ->whereNotNull('carrier')
+            ->where('carrier', '!=', '')
             ->distinct()
             ->orderBy('carrier')
             ->pluck('carrier');
 
+        $statusCounts = Shipment::query()
+            ->select('status', DB::raw('COUNT(*) as total'))
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
+        $carrierStats = Shipment::query()
+            ->select(
+                'carrier',
+                DB::raw('COUNT(*) as total'),
+                DB::raw("SUM(CASE WHEN status = 'IN_TRANSIT' THEN 1 ELSE 0 END) as in_transit"),
+                DB::raw("SUM(CASE WHEN status = 'DELIVERED' THEN 1 ELSE 0 END) as delivered")
+            )
+            ->whereNotNull('carrier')
+            ->where('carrier', '!=', '')
+            ->groupBy('carrier')
+            ->orderByDesc('total')
+            ->limit(6)
+            ->get();
+
+        $topRoutes = Shipment::query()
+            ->select('origin', 'destination', DB::raw('COUNT(*) as total'))
+            ->groupBy('origin', 'destination')
+            ->orderByDesc('total')
+            ->limit(5)
+            ->get();
+
+        $cargoStats = Shipment::query()
+            ->select(
+                'cargo_type',
+                DB::raw('COUNT(*) as total'),
+                DB::raw('COALESCE(SUM(weight),0) as weight'),
+                DB::raw('COALESCE(SUM(volume),0) as volume')
+            )
+            ->whereNotNull('cargo_type')
+            ->groupBy('cargo_type')
+            ->orderByDesc('total')
+            ->limit(6)
+            ->get();
+
+        $totalWeight = (float) Shipment::sum('weight');
+        $totalVolume = (float) Shipment::sum('volume');
+
+        $upcoming = Shipment::query()
+            ->whereIn('status', ['CREATED', 'BOOKED'])
+            ->whereNotNull('estimated_departure')
+            ->orderBy('estimated_departure')
+            ->limit(5)
+            ->get();
+
+        $nextNumber = 'CT-' . now()->year . '-' . str_pad((string) ((int) Shipment::max('id') + 1), 3, '0', STR_PAD_LEFT);
+
+        $states = $this->statesFor($shipments->getCollection());
+
         return view('operator.pengiriman.index', compact(
             'shipments',
-            'totalShipments',
-            'createdShipments',
-            'inTransitShipments',
-            'deliveredShipments',
-            'carriers'
+            'carriers',
+            'statusCounts',
+            'carrierStats',
+            'topRoutes',
+            'cargoStats',
+            'totalWeight',
+            'totalVolume',
+            'upcoming',
+            'nextNumber',
+            'states'
         ));
     }
 
@@ -105,6 +187,8 @@ class OperatorShipmentController extends Controller
                 'description' => 'Pengiriman berhasil dibuat oleh operator.',
                 'updated_by' => auth()->user()->name,
             ]);
+
+            $this->logStatus($shipment->id, null, 'CREATED', 'CREATE', null);
         });
 
         return redirect()
@@ -114,6 +198,11 @@ class OperatorShipmentController extends Controller
 
     public function update(Request $request, Shipment $shipment)
     {
+        // Aksi AJAX dari halaman (tanpa menambah route baru).
+        if ($request->filled('_action')) {
+            return $this->handleAction($request, $shipment, (string) $request->input('_action'));
+        }
+
         $rules = $this->shipmentRules();
 
         $rules['shipment_number'] = [
@@ -125,12 +214,197 @@ class OperatorShipmentController extends Controller
 
         $validated = $request->validate($rules);
 
+        // Status TIDAK diubah dari form edit; gunakan tombol "Lanjutkan status".
+        unset($validated['status']);
+
         $shipment->update($validated);
 
         return redirect()
             ->route('operator.pengiriman.index')
             ->with('success', 'Informasi pengiriman berhasil diperbarui.');
     }
+
+    /* ====================================================================
+     * AKSI AJAX
+     * ==================================================================== */
+
+    private function handleAction(Request $request, Shipment $shipment, string $action)
+    {
+        if ($action !== 'advance') {
+            abort(403, 'Aksi ini hanya tersedia untuk Administrator.');
+        }
+
+        $message = DB::transaction(function () use ($request, $shipment) {
+            $locked = Shipment::lockForUpdate()->findOrFail($shipment->id);
+
+            return $this->doAdvance($request, $locked);
+        });
+
+        $fresh = Shipment::with(['trackingEvents' => fn ($q) => $q->orderBy('event_time', 'asc')])
+            ->findOrFail($shipment->id);
+
+        return response()->json([
+            'success' => true,
+            'message' => $message,
+            'state'   => $this->statesFor([$fresh])[$fresh->id],
+            'tracks'  => $this->tracksOf($fresh),
+        ]);
+    }
+
+    /** Maju satu tahap + catat event tracking (lokasi untuk peta). */
+    private function doAdvance(Request $request, Shipment $shipment): string
+    {
+        $data = $request->validate([
+            'location'    => ['nullable', 'string', 'max:255'],
+            'description' => ['nullable', 'string', 'max:2000'],
+            'latitude'    => ['nullable', 'numeric', 'between:-90,90'],
+            'longitude'   => ['nullable', 'numeric', 'between:-180,180'],
+        ]);
+
+        $from = (string) $shipment->status;
+
+        if (in_array($from, ['DELIVERED'], true)) {
+            $this->fail('status', 'Status DELIVERED bersifat terminal. Hanya Administrator yang dapat membukanya kembali.');
+        }
+
+        $to = $this->nextOf($from);
+
+        if (! $to) {
+            $this->fail('status', 'Tidak ada status berikutnya.');
+        }
+
+        if (self::PAYMENT_GATE !== null && $to === self::PAYMENT_GATE && ! $this->isPaid($shipment->id)) {
+            $this->fail('status', 'Pembayaran belum lunas. Barang belum dapat berstatus ' . $this->nice($to) . '.');
+        }
+
+        $location = trim((string) ($data['location'] ?? ''));
+        if ($location === '') {
+            $last = $shipment->trackingEvents()->orderByDesc('event_time')->first();
+            $location = $to === 'DELIVERED'
+                ? $shipment->destination
+                : ($last->location ?? $shipment->origin);
+        }
+
+        $shipment->status = $to;
+        $shipment->save();
+
+        ShipmentTracking::create([
+            'shipment_id' => $shipment->id,
+            'status'      => $to,
+            'location'    => $location,
+            'event_time'  => now(),
+            'latitude'    => $data['latitude'] ?? null,
+            'longitude'   => $data['longitude'] ?? null,
+            'description' => $data['description'] ?? null,
+            'updated_by'  => auth()->user()->name,
+        ]);
+
+        $this->logStatus($shipment->id, $from, $to, 'TRANSITION', null);
+
+        return 'Status berubah: ' . $this->nice($from) . ' → ' . $this->nice($to) . '.';
+    }
+
+    private function logStatus(int $shipmentId, ?string $from, string $to, string $type, ?string $reason): void
+    {
+        // Log status dibuat oleh modul admin. Kalau tabelnya belum ada, lewati saja.
+        if (! Schema::hasTable('shipment_status_logs')) {
+            return;
+        }
+
+        DB::table('shipment_status_logs')->insert([
+            'shipment_id' => $shipmentId,
+            'from_status' => $from,
+            'to_status'   => $to,
+            'type'        => $type,
+            'reason'      => $reason,
+            'actor'       => (string) (auth()->user()->name ?? 'operator'),
+            'created_at'  => now(),
+        ]);
+    }
+
+    private function nextOf(string $from): ?string
+    {
+        $i = array_search($from, self::STATUSES, true);
+
+        return ($i === false || ! isset(self::STATUSES[$i + 1])) ? null : self::STATUSES[$i + 1];
+    }
+
+    private function isPaid(int $shipmentId): bool
+    {
+        if (! Schema::hasTable('shipment_payments')) {
+            return true; // modul pembayaran belum aktif -> gerbang pembayaran tidak berlaku
+        }
+
+        return DB::table('shipment_payments')
+            ->where('shipment_id', $shipmentId)
+            ->where('status', 'PAID')
+            ->exists();
+    }
+
+    /** Status pembayaran (read-only) + status berikutnya untuk banyak shipment sekaligus. */
+    private function statesFor($shipments): array
+    {
+        $shipments = collect($shipments);
+        $ids = $shipments->pluck('id')->all();
+
+        if (! $ids) {
+            return [];
+        }
+
+        $hasPay = Schema::hasTable('shipment_payments');
+        $pays = $hasPay
+            ? DB::table('shipment_payments')->whereIn('shipment_id', $ids)->orderByDesc('id')->get()->groupBy('shipment_id')
+            : collect();
+
+        $out = [];
+
+        foreach ($shipments as $s) {
+            $list = ($pays[$s->id] ?? collect())->pluck('status')->all();
+            $pay = in_array('PAID', $list, true) ? 'PAID' : (in_array('PENDING', $list, true) ? 'PENDING' : ($list[0] ?? 'NONE'));
+
+            $next = $this->nextOf((string) $s->status);
+            $blocked = null;
+
+            if ($next && self::PAYMENT_GATE !== null && $hasPay && $next === self::PAYMENT_GATE && $pay !== 'PAID') {
+                $blocked = 'Pembayaran harus lunas sebelum barang dapat dijemput (PICKED UP). Pembayaran dikelola Administrator.';
+            }
+
+            $out[$s->id] = [
+                'pay'     => $pay,
+                'next'    => $next,
+                'blocked' => $blocked,
+            ];
+        }
+
+        return $out;
+    }
+
+    private function tracksOf(Shipment $s): array
+    {
+        return $s->trackingEvents->map(fn ($t) => [
+            'status'   => $t->status,
+            'location' => $t->location,
+            'desc'     => $t->description,
+            'time'     => $t->event_time ? Carbon::parse($t->event_time)->format('d M Y H:i') : '-',
+            'lat'      => is_numeric($t->latitude) ? (float) $t->latitude : null,
+            'lng'      => is_numeric($t->longitude) ? (float) $t->longitude : null,
+            'by'       => $t->updated_by,
+        ])->values()->all();
+    }
+
+    private function fail(string $field, string $message): never
+    {
+        throw ValidationException::withMessages([$field => [$message]]);
+    }
+
+    private function nice(?string $v): string
+    {
+        return str_replace('_', ' ', (string) $v);
+    }
+
+    /* ====================================================================
+     * HALAMAN OPERATOR LAIN (tidak diubah)
+     * ==================================================================== */
 
     public function trackingIndex(Request $request)
     {

@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <title>Notifikasi | CargoTrace</title>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--navy:#061533;--blue:#2563eb;--ink:#12306a;--mut:#6c83ab;--line:#e0e9fa;--bg:#edf3ff}
+:root{--navy:#061533;--blue:#2563eb;--ink:#12306a;--mut:#6c83ab;--line:#e0e9fa;--bg:#edf3ff;--h:'Sora',sans-serif}
 body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--ink);font-size:13px}
 a{color:inherit;text-decoration:none}
 button,input,select{font-family:inherit}
@@ -20,7 +20,7 @@ button,input,select{font-family:inherit}
 .sidebar::before{content:"";position:absolute;width:300px;height:300px;top:-140px;right:-150px;border-radius:50%;background:radial-gradient(#38bdf860,#0000 70%);pointer-events:none}
 .brand{display:flex;align-items:center;gap:11px;padding:0 8px;position:relative}
 .brand-logo{display:grid;place-items:center;width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,#38bdf8,#2563eb);font-size:20px;box-shadow:0 8px 22px #2563eb77}
-.brand-name{font-weight:800;font-size:22px;letter-spacing:-.5px}
+.brand-name{font:800 22px var(--h);letter-spacing:-.5px}
 .brand-sub{margin:8px 8px 26px;font-size:9.5px;letter-spacing:.8px;color:#9fbcea;position:relative}
 .s-title{margin:0 12px 10px;font-size:10px;font-weight:700;letter-spacing:1.3px;color:#6f95d6}
 .s-wrap{position:relative;margin-bottom:22px}
@@ -40,36 +40,56 @@ button,input,select{font-family:inherit}
 
 /* ===== MAIN ===== */
 .main{margin-left:272px;min-height:100vh;background:radial-gradient(circle at 100% 0,#cfe3ff 0,#0000 380px),radial-gradient(circle at 0 100%,#d7e8ff 0,#0000 340px),var(--bg)}
-.content{padding:26px 32px 40px}
+.content{padding:26px 32px 44px}
 .alert{padding:13px 17px;margin-bottom:16px;border-radius:12px;font-size:12px;background:#e5f7ed;color:#187344}
 
-.hero{position:relative;overflow:hidden;padding:38px 42px;border-radius:30px;color:#fff;display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;margin-bottom:22px;
+.hero{position:relative;overflow:hidden;padding:36px 40px;border-radius:30px;color:#fff;margin-bottom:22px;
  background:linear-gradient(100deg,#061533f5 0%,#0b2a6bdd 55%,#1d6fe870 100%),url('https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=1800&q=80') center/cover,#0b2a6b;box-shadow:0 26px 54px #0b2a6b46}
+.hero::after{content:"";position:absolute;width:380px;height:380px;right:-110px;top:-190px;border-radius:50%;background:radial-gradient(#7cc8ff55,#0000 70%);pointer-events:none}
 .hero>*{position:relative;z-index:2}
+.hero-row{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap}
 .crumb{font-size:12px;color:#cfe0ff;margin-bottom:10px}
-.hero h1{font-weight:800;font-size:38px;letter-spacing:-1px;line-height:1.15}
-.hero p{margin-top:14px;max-width:560px;line-height:1.8;color:#dbe9ff;font-size:14px}
+.hero h1{font:800 34px/1.2 var(--h);letter-spacing:-1px}
+.hero p{margin-top:12px;max-width:600px;line-height:1.8;color:#dbe9ff;font-size:14px}
+.hbtns{display:flex;gap:10px;flex-wrap:wrap}
 .hbtn{display:inline-flex;align-items:center;gap:9px;padding:15px 22px;border:0;border-radius:14px;font-size:13px;font-weight:700;cursor:pointer;color:#fff;background:linear-gradient(135deg,#3b8bf5,#1d6fe8);box-shadow:0 10px 24px #1d6fe855}
+.hbtn.ghost{background:#ffffff1f;border:1px solid #ffffff44;box-shadow:none}
 .hbtn:hover{filter:brightness(1.08)}
+.hmini{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+.hmini span{display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border-radius:12px;background:#ffffff1c;border:1px solid #ffffff35;font-size:11.5px;font-weight:600;color:#e4efff}
+.hmini .live{width:8px;height:8px;border-radius:50%;background:#4ade80;animation:ping 1.8s infinite}
+@keyframes ping{0%{box-shadow:0 0 0 0 #4ade80aa}70%{box-shadow:0 0 0 9px #4ade8000}100%{box-shadow:0 0 0 0 #4ade8000}}
 
 .cx-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:22px}
-.cx-stat{position:relative;display:block;padding:24px 22px;background:#fff;border:1px solid #e9f0fb;border-radius:24px;box-shadow:0 10px 28px #2563eb0f;transition:.25s}
+.cx-stat{position:relative;display:block;padding:24px 22px;background:#fff;border:1px solid #e9f0fb;border-radius:24px;box-shadow:0 10px 28px #2563eb0f;transition:.25s;overflow:hidden}
+.cx-stat::after{content:"";position:absolute;right:-30px;top:-30px;width:100px;height:100px;border-radius:50%;background:radial-gradient(#2563eb14,#0000 70%)}
 a.cx-stat:hover{transform:translateY(-4px);border-color:#b9d2f7}
 .cx-ico{display:grid;place-items:center;width:56px;height:56px;border-radius:16px;font-size:22px;margin-bottom:18px}
-.cx-stat b{display:block;font-weight:800;font-size:32px;color:var(--navy);line-height:1}
+.cx-stat b{display:block;font:800 30px var(--h);color:var(--navy);line-height:1}
 .cx-stat strong{display:block;margin-top:9px;font-size:14px;font-weight:700;color:var(--navy)}
 .cx-stat small{display:block;margin-top:4px;font-size:12px;color:#8ca6c4}
-.cx-go{position:absolute;right:14px;top:50%;transform:translateY(-50%);display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#fff;border:1px solid #e0e9fa;color:#8ca6c4;font-size:10px}
+.cx-go{position:absolute;right:14px;top:50%;transform:translateY(-50%);display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#fff;border:1px solid #e0e9fa;color:#8ca6c4;font-size:10px;z-index:2}
 
-.panel{padding:30px;background:#fff;border:1px solid var(--line);border-radius:30px;box-shadow:0 14px 36px #2563eb0f;margin-bottom:22px}
+.panel{padding:28px;background:#fff;border:1px solid var(--line);border-radius:28px;box-shadow:0 14px 36px #2563eb0f;margin-bottom:22px}
 .ph{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .ph-left{display:flex;align-items:center;gap:14px}
 .ph-ico{display:grid;place-items:center;width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,#3b8bf5,#1d4ed8);color:#fff;font-size:17px;box-shadow:0 8px 18px #2563eb44}
-.ph h2{font-weight:800;font-size:22px;color:var(--navy);letter-spacing:-.4px}
+.ph h2{font:700 19px var(--h);color:var(--navy);letter-spacing:-.4px}
 .ph-sub{margin:10px 0 20px;font-size:13px;color:var(--mut)}
+.pact{display:flex;gap:10px;flex-wrap:wrap}
+.pact form{margin:0}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 20px;background:linear-gradient(135deg,#3b8bf5,#1d4ed8);color:#fff;border:0;border-radius:14px;cursor:pointer;font-weight:700;font-size:13px;white-space:nowrap;box-shadow:0 10px 22px #2563eb40;transition:.2s}
 .btn:hover{filter:brightness(1.08)}
 .btn-light{background:#e8f1ff;color:#1d4ed8;box-shadow:none}
+
+/* TAB CEPAT */
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.tab{display:inline-flex;align-items:center;gap:8px;padding:9px 15px;border:1px solid #dce8f8;border-radius:12px;background:#fbfdff;color:#3d68a8;font-weight:700;font-size:12px;transition:.15s}
+.tab:hover{background:#eef6ff}
+.tab.on{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 6px 16px #2563eb44}
+.tab b{padding:1px 8px;border-radius:10px;background:#ffffff33;font-size:11px}
+.tab:not(.on) b{background:#e8f1ff;color:#1d4ed8}
+
 .filters{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:22px}
 .filters input,.filters select{padding:14px 16px;border:1px solid #dce8f8;border-radius:14px;background:#fff;color:var(--ink);font-size:13px;outline:none}
 .filters input{flex:1;min-width:240px}
@@ -78,9 +98,11 @@ a.cx-stat:hover{transform:translateY(-4px);border-color:#b9d2f7}
 /* DAFTAR NOTIFIKASI */
 .nlist{display:grid;gap:12px}
 .ntf{position:relative;display:flex;align-items:flex-start;gap:16px;padding:20px 22px;border:1px solid #e9f0fb;border-radius:22px;background:#fff;transition:.2s}
-.ntf:hover{border-color:#b9d2f7;background:#fbfdff}
+.ntf:hover{border-color:#b9d2f7;background:#fbfdff;transform:translateX(2px)}
 .ntf.unread{background:#f4f8ff;border-color:#cfe0fb}
 .ntf.unread::before{content:"";position:absolute;left:0;top:20px;bottom:20px;width:4px;border-radius:0 4px 4px 0;background:var(--blue)}
+.ntf.imp.unread{background:#fffaf0;border-color:#f6dcae}
+.ntf.imp.unread::before{background:#f59e0b}
 .n-ico{display:grid;place-items:center;flex:none;width:50px;height:50px;border-radius:15px;font-size:19px}
 .n-info{background:#e8f1ff;color:#2563eb}.n-success{background:#e6f7ee;color:#16a34a}.n-warning{background:#fff3dc;color:#d58a20}.n-danger{background:#ffebeb;color:#e5484d}
 .n-body{flex:1;min-width:0}
@@ -105,7 +127,7 @@ a.cx-stat:hover{transform:translateY(-4px);border-color:#b9d2f7}
 .pager{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-top:22px;font-size:12px;color:#8ca6c4}
 .pager nav svg{width:16px;height:16px}
 
-@media(max-width:1100px){.content{padding:20px}.cx-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.hero{padding:30px 26px}.hero h1{font-size:30px}}
+@media(max-width:1100px){.content{padding:20px}.cx-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.hero{padding:30px 26px}.hero h1{font-size:28px}}
 @media(max-width:750px){
  .sidebar{width:72px;padding:18px 8px}.brand{justify-content:center}
  .brand-name,.brand-sub,.s-title,.s-link span,.s-user b,.s-user small,.s-user button,.bdg{display:none}
@@ -113,21 +135,24 @@ a.cx-stat:hover{transform:translateY(-4px);border-color:#b9d2f7}
  .main{margin-left:72px}.content{padding:16px 12px 28px}.panel{padding:20px}
  .ntf{flex-wrap:wrap}.n-acts{width:100%;justify-content:flex-end}
 }
-@media(max-width:600px){.cx-stats{grid-template-columns:1fr}.hero h1{font-size:26px}}
+@media(max-width:600px){.cx-stats{grid-template-columns:1fr}.hero h1{font-size:24px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
 
 @php
     $typeLabels = [
-        'shipment_created' => 'Shipment Created',
-        'shipment_status_update' => 'Shipment Status Update',
-        'shipment_in_transit' => 'Shipment In Transit',
-        'shipment_delivered' => 'Shipment Delivered',
-        'shipment_delayed' => 'Shipment Delayed',
-        'new_exception' => 'New Exception',
-        'exception_resolved' => 'Exception Resolved',
-        'tracking_update' => 'Tracking Update',
+        'shipment_created' => 'Pengiriman Baru',
+        'shipment_status_update' => 'Perubahan Status',
+        'shipment_in_transit' => 'Dalam Perjalanan',
+        'shipment_delivered' => 'Pengiriman Diterima',
+        'shipment_delayed' => 'Terlambat / Tertunda',
+        'shipment_cancelled' => 'Dibatalkan',
+        'eta_soon' => 'ETA Mendekati',
+        'new_exception' => 'Kendala Baru',
+        'exception_resolved' => 'Kendala Selesai',
+        'tracking_update' => 'Update Pelacakan',
     ];
 @endphp
 
@@ -175,17 +200,27 @@ a.cx-stat:hover{transform:translateY(-4px);border-color:#b9d2f7}
 
     <!-- HERO -->
     <section class="hero">
-        <div>
-            <div class="crumb">Dashboard / Notifikasi</div>
-            <h1>Pusat Notifikasi</h1>
-            <p>Pantau pembaruan pengiriman, pelacakan, dan pengecualian terbaru dalam satu halaman.</p>
+        <div class="hero-row">
+            <div>
+                <div class="crumb">Dashboard / Notifikasi</div>
+                <h1>Pusat Notifikasi</h1>
+                <p>Semua kejadian penting masuk ke sini otomatis: pengiriman terlambat, kendala, perubahan status, estimasi tiba yang mendekat, dan update pelacakan terbaru.</p>
+            </div>
+            <div class="hbtns">
+                <a href="{{ route('notifications.index', ['refresh' => 1]) }}" class="hbtn ghost"><i class="fa-solid fa-rotate"></i> Periksa Sekarang</a>
+                @if($unreadNotifications > 0)
+                    <form action="{{ route('notifications.readAll') }}" method="POST">
+                        @csrf @method('PATCH')
+                        <button type="submit" class="hbtn"><i class="fa-solid fa-check-double"></i> Tandai Semua Dibaca</button>
+                    </form>
+                @endif
+            </div>
         </div>
-        @if($unreadNotifications > 0)
-            <form action="{{ route('notifications.readAll') }}" method="POST">
-                @csrf @method('PATCH')
-                <button type="submit" class="hbtn"><i class="fa-solid fa-check-double"></i> Tandai Semua Dibaca</button>
-            </form>
-        @endif
+        <div class="hmini">
+            <span><i class="live"></i> Pemantauan otomatis aktif</span>
+            <span><i class="fa-solid fa-envelope"></i> {{ $unreadNotifications }} belum dibaca</span>
+            <span><i class="fa-solid fa-star"></i> {{ $importantNotifications }} penting</span>
+        </div>
     </section>
 
     <!-- STATISTIK -->
@@ -205,10 +240,11 @@ a.cx-stat:hover{transform:translateY(-4px);border-color:#b9d2f7}
             <b>{{ number_format($readNotifications) }}</b><strong>Sudah Dibaca</strong><small>Notifikasi yang telah dibaca.</small>
             <span class="cx-go"><i class="fa-solid fa-chevron-right"></i></span>
         </a>
-        <div class="cx-stat">
+        <a href="{{ route('notifications.index', ['status' => 'important']) }}" class="cx-stat">
             <div class="cx-ico" style="background:#fff3dc;color:#f59e0b"><i class="fa-solid fa-star"></i></div>
-            <b>{{ number_format($importantNotifications) }}</b><strong>Penting</strong><small>Pemberitahuan prioritas.</small>
-        </div>
+            <b>{{ number_format($importantNotifications) }}</b><strong>Penting</strong><small>Keterlambatan &amp; kendala.</small>
+            <span class="cx-go"><i class="fa-solid fa-chevron-right"></i></span>
+        </a>
     </section>
 
     <!-- DAFTAR -->
@@ -218,14 +254,25 @@ a.cx-stat:hover{transform:translateY(-4px);border-color:#b9d2f7}
                 <div class="ph-ico"><i class="fa-solid fa-list"></i></div>
                 <h2>Daftar Notifikasi</h2>
             </div>
-            @if($unreadNotifications > 0)
-                <form action="{{ route('notifications.readAll') }}" method="POST">
-                    @csrf @method('PATCH')
-                    <button type="submit" class="btn"><i class="fa-solid fa-check-double"></i> Tandai Semua Dibaca</button>
-                </form>
-            @endif
+            <div class="pact">
+                <a href="{{ route('notifications.index', ['refresh' => 1]) }}" class="btn btn-light"><i class="fa-solid fa-rotate"></i> Periksa Sekarang</a>
+                @if($unreadNotifications > 0)
+                    <form action="{{ route('notifications.readAll') }}" method="POST">
+                        @csrf @method('PATCH')
+                        <button type="submit" class="btn"><i class="fa-solid fa-check-double"></i> Tandai Semua Dibaca</button>
+                    </form>
+                @endif
+            </div>
         </div>
         <p class="ph-sub">{{ $notifications->total() }} notifikasi ditemukan. Informasi terbaru mengenai aktivitas pengiriman.</p>
+
+        <div class="tabs">
+            <a href="{{ route('notifications.index') }}" class="tab {{ !request('status') && !request('type') ? 'on' : '' }}">Semua <b>{{ $totalNotifications }}</b></a>
+            <a href="{{ route('notifications.index', ['status' => 'unread']) }}" class="tab {{ request('status') === 'unread' ? 'on' : '' }}">Belum dibaca <b>{{ $unreadNotifications }}</b></a>
+            <a href="{{ route('notifications.index', ['status' => 'important']) }}" class="tab {{ request('status') === 'important' ? 'on' : '' }}"><i class="fa-solid fa-star"></i> Penting <b>{{ $importantNotifications }}</b></a>
+            <a href="{{ route('notifications.index', ['type' => 'shipment_delayed']) }}" class="tab {{ request('type') === 'shipment_delayed' ? 'on' : '' }}"><i class="fa-solid fa-clock"></i> Terlambat</a>
+            <a href="{{ route('notifications.index', ['type' => 'new_exception']) }}" class="tab {{ request('type') === 'new_exception' ? 'on' : '' }}"><i class="fa-solid fa-triangle-exclamation"></i> Kendala</a>
+        </div>
 
         <form action="{{ route('notifications.index') }}" method="GET" class="filters">
             <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari judul, pesan, atau nomor pengiriman..." aria-label="Pencarian">
@@ -239,6 +286,7 @@ a.cx-stat:hover{transform:translateY(-4px);border-color:#b9d2f7}
                 <option value="">Semua status</option>
                 <option value="unread" @selected(request('status') === 'unread')>Belum dibaca</option>
                 <option value="read" @selected(request('status') === 'read')>Sudah dibaca</option>
+                <option value="important" @selected(request('status') === 'important')>Penting</option>
             </select>
             <button type="submit" class="btn"><i class="fa-solid fa-magnifying-glass"></i> Cari</button>
             <a href="{{ route('notifications.index') }}" class="btn btn-light">Reset</a>
@@ -250,12 +298,15 @@ a.cx-stat:hover{transform:translateY(-4px);border-color:#b9d2f7}
                 $data = $notification->data;
                 $type = $data['type'] ?? '';
                 $isUnread = is_null($notification->read_at);
+                $isImp = (bool) ($data['important'] ?? false);
                 $icon = match($type) {
                     'shipment_created' => 'fa-box',
                     'shipment_status_update' => 'fa-arrows-rotate',
                     'shipment_in_transit' => 'fa-truck-fast',
                     'shipment_delivered' => 'fa-circle-check',
                     'shipment_delayed' => 'fa-clock',
+                    'shipment_cancelled' => 'fa-ban',
+                    'eta_soon' => 'fa-hourglass-half',
                     'new_exception' => 'fa-triangle-exclamation',
                     'exception_resolved' => 'fa-shield-halved',
                     'tracking_update' => 'fa-location-dot',
@@ -263,18 +314,18 @@ a.cx-stat:hover{transform:translateY(-4px);border-color:#b9d2f7}
                 };
                 $style = match($type) {
                     'shipment_delivered', 'exception_resolved' => 'n-success',
-                    'shipment_delayed' => 'n-warning',
-                    'new_exception' => 'n-danger',
+                    'shipment_delayed', 'eta_soon' => 'n-warning',
+                    'new_exception', 'shipment_cancelled' => 'n-danger',
                     default => 'n-info',
                 };
             @endphp
-            <article class="ntf {{ $isUnread ? 'unread' : '' }}">
+            <article class="ntf {{ $isUnread ? 'unread' : '' }} {{ $isImp ? 'imp' : '' }}">
                 <div class="n-ico {{ $style }}"><i class="fa-solid {{ $icon }}"></i></div>
 
                 <div class="n-body">
                     <div class="n-title">
                         {{ $data['title'] ?? 'Pemberitahuan CargoTrace' }}
-                        @if($data['important'] ?? false)
+                        @if($isImp)
                             <span class="pill pill-imp"><i class="fa-solid fa-star"></i> Penting</span>
                         @endif
                         <span class="pill {{ $isUnread ? 'pill-unread' : 'pill-read' }}">{{ $isUnread ? 'BARU' : 'DIBACA' }}</span>
@@ -309,7 +360,7 @@ a.cx-stat:hover{transform:translateY(-4px);border-color:#b9d2f7}
             <div class="empty">
                 <i class="fa-regular fa-bell-slash"></i>
                 <h3>Belum Ada Notifikasi</h3>
-                <p>Notifikasi aktivitas CargoTrace akan muncul di sini.</p>
+                <p>Kejadian pengiriman seperti keterlambatan dan kendala akan muncul di sini.</p>
             </div>
         @endforelse
         </div>

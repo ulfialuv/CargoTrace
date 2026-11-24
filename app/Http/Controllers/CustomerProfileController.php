@@ -15,6 +15,12 @@ class CustomerProfileController extends Controller
      */
     public function index()
     {
+        // Permintaan gambar foto profil: /customer/profil?foto=...
+        // Memakai route yang sudah ada, jadi tidak perlu menambah route baru.
+        if (request()->has('foto')) {
+            return $this->photo();
+        }
+
         $user = auth()->user();
 
         $addresses = $user->customerAddresses()
@@ -64,6 +70,23 @@ class CustomerProfileController extends Controller
             'shipmentCount',
             'deliveredCount'
         ));
+    }
+
+    /**
+     * Menampilkan foto profil Customer yang sedang login.
+     *
+     * File dibaca langsung dari disk "public", jadi tidak bergantung pada
+     * symlink public/storage (php artisan storage:link) maupun APP_URL.
+     */
+    protected function photo()
+    {
+        $path = auth()->user()->profile_photo_path;
+
+        abort_unless($path && Storage::disk('public')->exists($path), 404);
+
+        return Storage::disk('public')->response($path, null, [
+            'Cache-Control' => 'private, max-age=86400',
+        ]);
     }
 
     /**

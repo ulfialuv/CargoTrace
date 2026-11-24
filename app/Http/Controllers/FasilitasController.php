@@ -31,11 +31,11 @@ class FasilitasController extends Controller
     }
 
     /**
-     * Halaman utama fasilitas.
+     * Halaman utama fasilitas (daftar + peta).
      */
     public function index(Request $request)
     {
-        $search = $request->input('search');
+        $search = trim((string) $request->input('search', ''));
         $type   = $request->input('type');
         $city   = $request->input('city');
         $status = $request->input('status');
@@ -50,7 +50,7 @@ class FasilitasController extends Controller
         // Query dengan pencarian dan filter
         $query = Facility::query();
 
-        $query->when($search, function ($query) use ($search) {
+        $query->when($search !== '', function ($query) use ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('facility_code', 'like', "%{$search}%")
                     ->orWhere('name', 'like', "%{$search}%")
@@ -64,16 +64,32 @@ class FasilitasController extends Controller
         $query->when($city, fn ($q) => $q->where('city', $city));
         $query->when($status, fn ($q) => $q->where('status', $status));
 
-        // Data peta: semua fasilitas hasil filter yang punya koordinat
-        // (bukan hanya halaman yang sedang tampil)
+        // Data peta: semua fasilitas hasil filter yang punya koordinat valid
+        // (bukan hanya halaman yang sedang tampil). Koordinat dipastikan float.
         $mapFacilities = (clone $query)
             ->whereNotNull('latitude')
             ->whereNotNull('longitude')
             ->orderBy('name')
+            ->limit(1000)
             ->get()
-            ->map(fn ($f) => $f->toArray())
+            ->map(function ($f) {
+                $row = $f->toArray();
+                $row['latitude']  = is_numeric($f->latitude) ? (float) $f->latitude : null;
+                $row['longitude'] = is_numeric($f->longitude) ? (float) $f->longitude : null;
+                $row['capacity']  = is_numeric($f->capacity) ? (float) $f->capacity : null;
+
+                return $row;
+            })
+            ->filter(fn ($row) => $row['latitude'] !== null && $row['longitude'] !== null)
             ->values()
             ->all();
+
+        // Jumlah hasil filter yang belum punya koordinat (info di bawah peta)
+        $tanpaKoordinat = (clone $query)
+            ->where(function ($q) {
+                $q->whereNull('latitude')->orWhereNull('longitude');
+            })
+            ->count();
 
         $facilities = $query
             ->orderBy('name')
@@ -98,7 +114,8 @@ class FasilitasController extends Controller
             'totalBandara',
             'totalDarat',
             'totalNonaktif',
-            'mapFacilities'
+            'mapFacilities',
+            'tanpaKoordinat'
         ));
     }
 
@@ -130,7 +147,7 @@ class FasilitasController extends Controller
     public function show(Facility $fasilita)
     {
         return view('fasilitas.show', [
-            'facility' => $fasilita
+            'facility' => $fasilita,
         ]);
     }
 
@@ -140,7 +157,7 @@ class FasilitasController extends Controller
     public function edit(Facility $fasilita)
     {
         return view('fasilitas.edit', [
-            'facility' => $fasilita
+            'facility' => $fasilita,
         ]);
     }
 

@@ -33,6 +33,7 @@ a{color:inherit}
 .btn-danger{background:#ffe9e9;color:#c92f3a;box-shadow:none}
 .alert{display:flex;gap:10px;align-items:center;padding:13px 17px;margin-bottom:18px;border-radius:14px;background:#e5f7ed;color:#187344;font-weight:600}
 .alert.err{background:#ffe9e9;color:#b9302d}
+.alert.info{background:#e5f1ff;color:#1d4ed8}
 
 /* ALUR STATUS */
 .flow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:22px}
@@ -225,6 +226,20 @@ td.empty i{display:grid;place-items:center;width:58px;height:58px;margin:0 auto 
 .bdgs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
 @media(max-width:1250px){.flow.four{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
+/* ===== OTOMATIS + ETA/DELAY ===== */
+.autotag{display:inline-flex;align-items:center;gap:5px;margin-top:4px;padding:2px 8px;border-radius:20px;background:#e5f1ff;color:#1d4ed8;font-size:9.5px;font-weight:700}
+.rules{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.rules .status::before{display:none}
+.mon{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.mon a{display:block;padding:16px;border:1px solid var(--line);border-radius:18px;background:#fbfdff;text-decoration:none;transition:.2s}
+.mon a:hover{border-color:#9fc2f7;transform:translateY(-2px)}
+.mon .top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+.mon .top strong{color:var(--navy);font-size:13px}
+.mon dl{display:grid;grid-template-columns:auto 1fr;gap:5px 12px;font-size:11.5px}
+.mon dt{color:#8ca6c4;font-weight:600}.mon dd{color:var(--navy);font-weight:600;text-align:right}
+.mon .late{margin-top:10px;padding:9px 12px;border-radius:12px;background:#fff4dc;color:#8a5a00;font-weight:700;font-size:11.5px;display:flex;justify-content:space-between;gap:8px}
+.mon .link{margin-top:8px;font-size:11px;color:var(--blue);font-weight:700}
+.reason{padding:13px 15px;border-radius:14px;background:#fff8e8;border:1px solid #fde7b0;color:#7a5200;font-size:12px;line-height:1.7;margin-top:10px}
 </style>
 </head>
 <body>
@@ -233,6 +248,8 @@ td.empty i{display:grid;place-items:center;width:58px;height:58px;margin:0 auto 
     use Carbon\Carbon;
     $rt = fn ($name) => Route::has($name) ? route($name) : '#';
     $fmt = fn ($v, $f = 'd M Y H:i') => $v ? Carbon::parse($v)->format($f) : null;
+    $n = fn ($v) => rtrim(rtrim(number_format((float) $v, 2, '.', ''), '0'), '.') ?: '0';
+    $stripRe = '/^\[AUTO-(?:DELAY|EVENT:\d+)\]\s*/';
     $types = [
         'CUSTOMS_HOLD'        => ['Customs Hold', 'fa-stamp'],
         'WEATHER_DELAY'       => ['Weather Delay', 'fa-cloud-showers-heavy'],
@@ -251,7 +268,7 @@ td.empty i{display:grid;place-items:center;width:58px;height:58px;margin:0 auto 
 
     // Data untuk panel detail & form edit (termasuk pengecualian yang dibuka lewat link lama).
     $list = $exceptions->getCollection();
-    if ($focus && !$list->contains('id', $focus->id)) { $list = $list->push($focus); }
+    if ($focus && !$list->contains('id', $focus->id)) { $list = $list->concat([$focus]); }
     $rows = $list->map(fn ($e) => [
         'id' => $e->id,
         'code' => 'EXC-' . str_pad($e->id, 5, '0', STR_PAD_LEFT),
@@ -270,9 +287,11 @@ td.empty i{display:grid;place-items:center;width:58px;height:58px;margin:0 auto 
         'occurred_raw' => $e->occurred_at ? Carbon::parse($e->occurred_at)->format('Y-m-d\TH:i') : '',
         'severity' => $e->severity,
         'status' => $e->status,
-        'description' => $e->description,
+        'auto' => (bool) preg_match('/^\[AUTO-/', (string) $e->description),
+        'description' => preg_replace($stripRe, '', (string) $e->description),
         'cause' => $e->cause,
         'impact' => $e->impact,
+        'delay' => $delayMap[$e->id] ?? null,
         'assigned_to' => $e->assigned_to,
         'assigned' => optional($e->assignedStaff)->name,
         'reporter' => optional($e->reporter)->name,
@@ -287,9 +306,10 @@ td.empty i{display:grid;place-items:center;width:58px;height:58px;margin:0 auto 
     ])->values();
 
     $formMode = $errors->any() ? old('_modal') : null;   // create | edit
-    $openModal = in_array($formMode, ['create', 'edit'], true);
+    $openModal = $canManage && in_array($formMode, ['create', 'edit'], true);
     $sevTotal = max($stats['low'] + $stats['medium'] + $stats['high'], 1);
     $maxT = max((int) ($typeStats->max() ?? 1), 1);
+    $syncTotal = $sync ? ($sync['created'] + $sync['updated'] + $sync['resolved']) : 0;
 @endphp
 
 <!-- SIDEBAR -->
@@ -301,7 +321,7 @@ td.empty i{display:grid;place-items:center;width:58px;height:58px;margin:0 auto 
     <div class="ct-sub">LOGISTICS &amp; SHIPMENT TRACKING</div>
 
     <div class="ct-title">MENU NAVIGASI</div>
-    
+
 <nav class="ct-menu">
     <a href="{{ route('dashboard') }}" class="ct-link">
         <i class="fa-solid fa-border-all"></i>
@@ -349,7 +369,6 @@ td.empty i{display:grid;place-items:center;width:58px;height:58px;margin:0 auto 
     </a>
 </nav>
 
-
     <div class="ct-user">
         <div class="ct-who">
             <div class="ct-av">{{ strtoupper(substr(auth()->user()->name ?? 'A', 0, 1)) }}</div>
@@ -367,15 +386,18 @@ td.empty i{display:grid;place-items:center;width:58px;height:58px;margin:0 auto 
         <div>
             <div class="crumb"><a href="{{ route('dashboard') }}" style="text-decoration:none">Dashboard</a> &nbsp;/&nbsp; Pengecualian</div>
             <h1>Manajemen Pengecualian</h1>
-            <p>Pantau, identifikasi, dan tangani kendala dalam proses pengiriman, dari laporan awal sampai selesai.</p>
+            <p>Pantau, identifikasi, dan tangani kendala pengiriman. Keterlambatan (ETA melewati jadwal) terdeteksi dan masuk otomatis sebagai pengecualian.</p>
         </div>
         <div class="hero-actions">
-            <button type="button" class="btn" id="openCreate"><i class="fa-solid fa-plus"></i> Tambah Pengecualian</button>
+            <a href="{{ route('exceptions.index', ['sync' => 1]) }}#monitor" class="btn btn-glass"><i class="fa-solid fa-rotate"></i> Sinkronkan Delay</a>
+            @if($canManage)<button type="button" class="btn" id="openCreate"><i class="fa-solid fa-plus"></i> Tambah Pengecualian</button>@endif
         </div>
     </section>
 
     @if(session('success'))<div class="alert"><i class="fa-solid fa-circle-check"></i> {{ session('success') }}</div>@endif
     @if($errors->any() && !$openModal)<div class="alert err"><i class="fa-solid fa-circle-exclamation"></i> {{ $errors->first() }}</div>@endif
+    @if($sync && $sync['error'])<div class="alert err"><i class="fa-solid fa-circle-exclamation"></i> Deteksi otomatis gagal dijalankan. Periksa storage/logs/laravel.log.</div>@endif
+    @if($syncTotal > 0)<div class="alert info"><i class="fa-solid fa-robot"></i> Deteksi otomatis: {{ $sync['created'] }} pengecualian baru, {{ $sync['updated'] }} diperbarui, {{ $sync['resolved'] }} diselesaikan otomatis.</div>@endif
 
     <!-- STATISTIK -->
     <section class="flow four">
@@ -387,6 +409,45 @@ td.empty i{display:grid;place-items:center;width:58px;height:58px;margin:0 auto 
                 <small>{{ $desc }}</small>
             </a>
         @endforeach
+    </section>
+
+    <!-- PEMANTAUAN ETA & DELAY -->
+    <section class="panel sect" id="monitor">
+        <div class="ph">
+            <div>
+                <h2><span class="hi"><i class="fa-solid fa-hourglass-half"></i></span> Pemantauan ETA &amp; Delay</h2>
+                <p>Estimated arrival dibandingkan dengan expected arrival. Shipment yang terlambat otomatis dibuatkan pengecualian ({{ $stats['auto'] }} pengecualian otomatis tercatat).</p>
+            </div>
+            <span class="pill">{{ $delayOverview['total'] }} shipment terlambat</span>
+        </div>
+
+        <div class="rules">
+            <span class="status sv-LOW">0–{{ $n($rules['low_max']) }} jam · LOW</span>
+            <span class="status sv-MEDIUM">&gt;{{ $n($rules['low_max']) }}–{{ $n($rules['medium_max']) }} jam · MEDIUM</span>
+            <span class="status sv-HIGH">&gt;{{ $n($rules['medium_max']) }} jam · HIGH</span>
+            <span class="status st-CREATED">Threshold minimal: {{ $n($rules['threshold']) }} jam</span>
+        </div>
+
+        @if(!$etaCols)
+            <div class="nodata"><i class="fa-solid fa-circle-info" style="font-size:22px;color:var(--blue)"></i><br>Kolom ETA belum ditemukan di tabel <b>shipments</b>.<br>Tambahkan kolom <b>estimated_arrival</b> dan <b>expected_arrival</b> (tipe datetime) agar deteksi delay otomatis berjalan.</div>
+        @elseif(empty($delayOverview['rows']))
+            <div class="nodata"><i class="fa-solid fa-circle-check" style="font-size:22px;color:#16a34a"></i><br>Tidak ada shipment aktif yang terlambat. Semua sesuai jadwal.</div>
+        @else
+            <div class="mon">
+                @foreach($delayOverview['rows'] as $d)
+                    <a href="{{ $d['exception_id'] ? route('exceptions.index', ['buka' => 'detail', 'id' => $d['exception_id']]) : '#monitor' }}">
+                        <div class="top"><strong>{{ $d['shipment_number'] }}</strong><span class="status sv-{{ $d['severity'] }}">{{ $d['severity'] }}</span></div>
+                        <dl>
+                            <dt>Pelanggan</dt><dd>{{ $d['customer'] ?: '-' }}</dd>
+                            <dt>Expected arrival</dt><dd>{{ $d['expected'] }}</dd>
+                            <dt>Estimated (ETA)</dt><dd>{{ $d['estimated'] }}</dd>
+                        </dl>
+                        <div class="late"><span><i class="fa-solid fa-clock"></i> Terlambat</span><span>{{ $d['duration'] }}</span></div>
+                        @if($d['exception_code'])<div class="link">{{ $d['exception_code'] }} · {{ $d['exception_status'] }} →</div>@endif
+                    </a>
+                @endforeach
+            </div>
+        @endif
     </section>
 
     <!-- KEPARAHAN + JENIS -->
@@ -405,10 +466,10 @@ td.empty i{display:grid;place-items:center;width:58px;height:58px;margin:0 auto 
         <div class="panel">
             <div class="ph"><div><h2><span class="hi"><i class="fa-solid fa-chart-simple"></i></span> Berdasarkan Jenis</h2><p>Jenis kendala yang paling sering terjadi.</p></div></div>
             @foreach($types as $key => [$label, $icon])
-                @php $n = (int) ($typeStats[$key] ?? 0); @endphp
+                @php $cnt = (int) ($typeStats[$key] ?? 0); @endphp
                 <div class="li">
-                    <div class="t"><strong>{{ $label }}</strong><span class="pill">{{ $n }}</span></div>
-                    <div class="bar"><i style="width:{{ $n / $maxT * 100 }}%"></i></div>
+                    <div class="t"><strong>{{ $label }}</strong><span class="pill">{{ $cnt }}</span></div>
+                    <div class="bar"><i style="width:{{ $cnt / $maxT * 100 }}%"></i></div>
                 </div>
             @endforeach
         </div>
@@ -421,7 +482,7 @@ td.empty i{display:grid;place-items:center;width:58px;height:58px;margin:0 auto 
                 <h2><span class="hi"><i class="fa-solid fa-list"></i></span> Daftar Pengecualian</h2>
                 <p>{{ $stats['total'] }} laporan tersimpan. Klik baris untuk melihat detail dan riwayat penanganan.</p>
             </div>
-            <button type="button" class="btn" id="openCreate2"><i class="fa-solid fa-plus"></i> Tambah</button>
+            @if($canManage)<button type="button" class="btn" id="openCreate2"><i class="fa-solid fa-plus"></i> Tambah</button>@endif
         </div>
 
         <form action="{{ route('exceptions.index') }}#daftar" method="GET" class="filters ex">
@@ -435,6 +496,10 @@ td.empty i{display:grid;place-items:center;width:58px;height:58px;margin:0 auto 
             <select name="status" aria-label="Status"><option value="">Semua status</option>
                 @foreach(['OPEN', 'INVESTIGATING', 'RESOLVED'] as $v)<option value="{{ $v }}" @selected(request('status') === $v)>{{ $v }}</option>@endforeach
             </select>
+            <select name="source" aria-label="Sumber"><option value="">Semua sumber</option>
+                <option value="AUTO" @selected(request('source') === 'AUTO')>Otomatis (sistem)</option>
+                <option value="MANUAL" @selected(request('source') === 'MANUAL')>Manual</option>
+            </select>
             <input type="date" name="date_from" value="{{ request('date_from') }}" title="Dari tanggal" aria-label="Dari tanggal">
             <input type="date" name="date_to" value="{{ request('date_to') }}" title="Sampai tanggal" aria-label="Sampai tanggal">
             <button type="submit" class="btn"><i class="fa-solid fa-magnifying-glass"></i> Cari</button>
@@ -447,7 +512,7 @@ td.empty i{display:grid;place-items:center;width:58px;height:58px;margin:0 auto 
                 <tbody>
                 @forelse($exceptions as $i => $e)
                     <tr data-i="{{ $i }}" tabindex="0">
-                        <td><span class="num">EXC-{{ str_pad($e->id, 5, '0', STR_PAD_LEFT) }}</span></td>
+                        <td><span class="num">EXC-{{ str_pad($e->id, 5, '0', STR_PAD_LEFT) }}</span>@if(preg_match('/^\[AUTO-/', (string) $e->description))<br><span class="autotag"><i class="fa-solid fa-robot"></i> Otomatis</span>@endif</td>
                         <td><strong style="color:var(--navy)">{{ $e->shipment->shipment_number ?? '-' }}</strong><small>{{ $e->shipment->customer_name ?? '-' }}</small></td>
                         <td><span class="tbadge"><i class="fa-solid {{ $types[$e->type][1] ?? 'fa-triangle-exclamation' }}"></i>{{ $types[$e->type][0] ?? str_replace('_', ' ', $e->type) }}</span></td>
                         <td>{{ $e->location }}</td>
@@ -457,8 +522,10 @@ td.empty i{display:grid;place-items:center;width:58px;height:58px;margin:0 auto 
                         <td>@if($e->assignedStaff){{ $e->assignedStaff->name }}@else<span class="muted">Belum ditugaskan</span>@endif</td>
                         <td><div class="acts">
                             <button type="button" class="ab" data-act="view" data-i="{{ $i }}" title="Detail" aria-label="Detail"><i class="fa-solid fa-eye"></i></button>
+                            @if($canManage)
                             <button type="button" class="ab" data-act="edit" data-i="{{ $i }}" title="Edit" aria-label="Edit"><i class="fa-solid fa-pen"></i></button>
                             <button type="button" class="ab del" data-act="del" data-i="{{ $i }}" title="Hapus" aria-label="Hapus"><i class="fa-solid fa-trash"></i></button>
+                            @endif
                         </div></td>
                     </tr>
                 @empty
@@ -484,6 +551,7 @@ td.empty i{display:grid;place-items:center;width:58px;height:58px;margin:0 auto 
     <div class="dr-foot" id="drFoot"></div>
 </aside>
 
+@if($canManage)
 <!-- MODAL TAMBAH / EDIT -->
 <div class="modal {{ $openModal ? 'open' : '' }}" id="modal">
     <div class="mbox" role="dialog" aria-modal="true" aria-labelledby="mTitle">
@@ -550,6 +618,7 @@ td.empty i{display:grid;place-items:center;width:58px;height:58px;margin:0 auto 
         </form>
     </div>
 </div>
+@endif
 
 <script>
 const $ = id => document.getElementById(id);
@@ -557,9 +626,11 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt
 const nice = v => esc(String(v || '').replace(/_/g, ' '));
 
 const ROWS = @json($rows), BASE = @json(rtrim(route('exceptions.index'), '/')), STORE = @json(route('exceptions.store')), CSRF = @json(csrf_token());
+const CAN = @json($canManage);
 const FORM = { mode: @json($formMode), id: @json(old('_id')) };
 const STEPS = [['OPEN','Open','fa-circle-exclamation'],['INVESTIGATING','Investigating','fa-magnifying-glass'],['RESOLVED','Resolved','fa-circle-check']];
 const HACT = { CREATED:'Pengecualian dibuat', UPDATED:'Data diperbarui', STATUS_CHANGED:'Status berubah' };
+const AUTO_RE = /^\[AUTO[^\]]*\]\s*/;
 
 /* ===== MODAL TAMBAH / EDIT ===== */
 const modal = $('modal'), exForm = $('exForm');
@@ -574,11 +645,12 @@ function setForm(mode, e) {
 }
 function cleanForm() { exForm.reset(); exForm.querySelectorAll('.ferr').forEach(x => x.remove()); }
 function openCreate() {
+    if (!CAN) return;
     cleanForm(); setForm('create'); $('curFile').classList.add('hide');
     $('f_st').value = 'OPEN'; modal.classList.add('open'); setTimeout(() => $('f_sh').focus(), 50);
 }
 function openEdit(e) {
-    if (!e) return;
+    if (!CAN || !e) return;
     cleanForm(); setForm('edit', e);
     const set = (id, v) => { $(id).value = v ?? ''; };
     set('f_sh', e.shipment_id); set('f_ty', e.type); set('f_lo', e.location); set('f_oc', e.occurred_raw); set('f_sv', e.severity);
@@ -587,16 +659,18 @@ function openEdit(e) {
     cf.innerHTML = e.att ? 'Lampiran saat ini: <a href="' + esc(e.att) + '" target="_blank" rel="noopener">Lihat lampiran</a> · pilih file baru di bawah untuk menggantinya.' : 'Belum ada lampiran bukti.';
     closeDrawer(); modal.classList.add('open'); setTimeout(() => $('f_lo').focus(), 50);
 }
-const closeModal = () => modal.classList.remove('open');
-['openCreate', 'openCreate2'].forEach(id => $(id).addEventListener('click', openCreate));
-['mClose', 'mCancel'].forEach(id => $(id).addEventListener('click', closeModal));
-modal.addEventListener('click', ev => { if (ev.target === modal) closeModal(); });
-if (FORM.mode === 'edit' && FORM.id) setForm('edit', { id: FORM.id, code: '' });   // buka ulang setelah validasi gagal
+const closeModal = () => { if (modal) modal.classList.remove('open'); };
+if (CAN) {
+    ['openCreate', 'openCreate2'].forEach(id => $(id)?.addEventListener('click', openCreate));
+    ['mClose', 'mCancel'].forEach(id => $(id).addEventListener('click', closeModal));
+    modal.addEventListener('click', ev => { if (ev.target === modal) closeModal(); });
+    if (FORM.mode === 'edit' && FORM.id) setForm('edit', { id: FORM.id, code: '' });   // buka ulang setelah validasi gagal
+}
 
 /* ===== HAPUS ===== */
 function delItem(i) {
     const e = ROWS[i];
-    if (!e || !confirm('Hapus pengecualian ' + e.code + '? Data dan lampirannya tidak dapat dikembalikan.')) return;
+    if (!CAN || !e || !confirm('Hapus pengecualian ' + e.code + '? Data dan lampirannya tidak dapat dikembalikan.')) return;
     const f = document.createElement('form');
     f.method = 'POST'; f.action = BASE + '/' + encodeURIComponent(e.id);
     f.innerHTML = '<input type="hidden" name="_token" value="' + CSRF + '"><input type="hidden" name="_method" value="DELETE">';
@@ -610,6 +684,16 @@ const kv = (k, v, full) => '<div' + (full ? ' class="full"' : '') + '><small>' +
 const tx = (v, empty) => '<div class="tx">' + (v ? esc(v) : '<span class="muted">' + empty + '</span>') + '</div>';
 function closeDrawer() { dr.classList.remove('open'); veil.classList.remove('open'); dr.setAttribute('aria-hidden', 'true'); }
 
+function delayHtml(e) {
+    const d = e.delay;
+    if (!d) return '';
+    return '<div class="dr-sec"><h4><i class="fa-solid fa-hourglass-half"></i> PERHITUNGAN ETA &amp; DELAY</h4><div class="kv">' +
+        kv('Expected arrival', d.expected) + kv('Estimated arrival (ETA)', d.estimated) +
+        kv('Durasi keterlambatan', d.duration) + kv('Severity hasil rule', d.delayed ? d.severity : 'Tidak ada (tepat waktu)') +
+        kv('Aturan severity', d.rule, true) + '</div>' +
+        '<div class="reason"><b>Alasan:</b> ' + esc(d.reason) + '</div></div>';
+}
+
 function detailHtml(e) {
     const idx = STEPS.findIndex(s => s[0] === e.status);
     const isImg = e.att && /\.(jpe?g|png)(\?|$)/i.test(e.att);
@@ -619,20 +703,25 @@ function detailHtml(e) {
         : '<div class="tx"><span class="muted">Belum ada lampiran bukti untuk pengecualian ini.</span></div>';
     const hist = (e.hist || []).slice().reverse();
     const histHtml = hist.length
-        ? '<div class="tl">' + hist.map((h, n) => '<div class="ti ' + (n === 0 ? 'last' : '') + '"><b>' + esc(HACT[h.action] || String(h.action || '').replace(/_/g, ' ')) + '</b>' +
+        ? '<div class="tl">' + hist.map((h, n) => {
+            const auto = /^\[AUTO/.test(h.note || '');
+            return '<div class="ti ' + (n === 0 ? 'last' : '') + '"><b>' + esc(HACT[h.action] || String(h.action || '').replace(/_/g, ' ')) + '</b>' +
             ((h.old || h.new) ? '<span>Status: ' + nice(h.old || 'Belum ada') + ' → ' + nice(h.new || '-') + '</span>' : '') +
-            (h.note ? '<small>' + esc(h.note) + '</small>' : '') + '<small>' + esc(h.user || 'Sistem') + ' · ' + esc(h.time || '') + '</small></div>').join('') + '</div>'
+            (h.note ? '<small>' + esc(h.note.replace(AUTO_RE, '')) + '</small>' : '') + '<small>' + esc(auto ? 'Sistem otomatis' : (h.user || 'Sistem')) + ' · ' + esc(h.time || '') + '</small></div>';
+        }).join('') + '</div>'
         : '<div class="tx"><span class="muted">Belum ada riwayat penanganan.</span></div>';
 
-    return '<div class="bdgs"><span class="status sv-' + esc(e.severity) + '">' + esc(e.severity) + ' SEVERITY</span><span class="status st-' + esc(e.status) + '">' + esc(e.status) + '</span></div>' +
+    return '<div class="bdgs"><span class="status sv-' + esc(e.severity) + '">' + esc(e.severity) + ' SEVERITY</span><span class="status st-' + esc(e.status) + '">' + esc(e.status) + '</span>' +
+        (e.auto ? '<span class="status st-BOOKED"><i class="fa-solid fa-robot"></i> Terdeteksi otomatis</span>' : '') + '</div>' +
         '<div class="dr-sec"><h4><i class="fa-solid fa-signal"></i> STATUS PENANGANAN</h4><div class="prog">' +
             STEPS.map((s, n) => '<div class="pg ' + (n < idx ? 'done' : n === idx ? 'now' : '') + '"><i class="fa-solid ' + (n < idx ? 'fa-check' : s[2]) + '"></i><small>' + s[1] + '</small></div>').join('') + '</div></div>' +
         '<div class="dr-sec"><h4><i class="fa-solid fa-box"></i> INFORMASI PENGIRIMAN</h4><div class="kv">' + kv('Nomor pengiriman', e.sn) + kv('Pelanggan', e.customer) + kv('Nama barang', e.sname) + kv('Perusahaan', e.carrier) + kv('Asal', e.origin) + kv('Tujuan', e.destination) + kv('Status pengiriman', e.sstatus ? String(e.sstatus).replace(/_/g, ' ') : '-', true) + '</div></div>' +
+        delayHtml(e) +
         '<div class="dr-sec"><h4><i class="fa-solid fa-triangle-exclamation"></i> DETAIL KEJADIAN</h4><div class="kv">' + kv('Jenis', e.type_label) + kv('Lokasi', e.location) + kv('Waktu kejadian', e.occurred, true) + '</div><div style="margin-top:10px">' + tx(e.description, 'Tidak ada deskripsi.') + '</div></div>' +
         '<div class="dr-sec"><h4><i class="fa-solid fa-magnifying-glass-chart"></i> PENYEBAB</h4>' + tx(e.cause, 'Belum ada informasi penyebab.') + '</div>' +
         '<div class="dr-sec"><h4><i class="fa-solid fa-burst"></i> DAMPAK PENGIRIMAN</h4>' + tx(e.impact, 'Belum ada informasi dampak.') + '</div>' +
         '<div class="dr-sec"><h4><i class="fa-solid fa-paperclip"></i> BUKTI &amp; LAMPIRAN</h4>' + att + '</div>' +
-        '<div class="dr-sec"><h4><i class="fa-solid fa-user-check"></i> PENANGANAN</h4><div class="kv">' + kv('Petugas', e.assigned || 'Belum ditugaskan') + kv('Dilaporkan oleh', e.reporter || 'Tidak diketahui') + kv('Waktu pelaporan', e.created) + kv('Waktu penyelesaian', e.resolved || 'Belum diselesaikan') + '</div></div>' +
+        '<div class="dr-sec"><h4><i class="fa-solid fa-user-check"></i> PENANGANAN</h4><div class="kv">' + kv('Petugas', e.assigned || 'Belum ditugaskan') + kv('Dilaporkan oleh', e.auto ? 'Sistem (otomatis)' : (e.reporter || 'Tidak diketahui')) + kv('Waktu deteksi / pelaporan', e.created) + kv('Waktu penyelesaian', e.resolved || 'Belum diselesaikan') + '</div></div>' +
         '<div class="dr-sec"><h4><i class="fa-solid fa-clock-rotate-left"></i> RIWAYAT PENANGANAN</h4>' + histHtml + '</div>';
 }
 
@@ -642,11 +731,14 @@ function showDrawer(i) {
     $('drNum').textContent = e.code;
     $('drSub').textContent = (e.type_label || '') + (e.sn ? ' · ' + e.sn : '');
     $('drBody').innerHTML = detailHtml(e); $('drBody').scrollTop = 0;
-    $('drFoot').innerHTML =
-        '<button type="button" class="btn" id="drEdit"><i class="fa-solid fa-pen"></i> Edit Pengecualian</button>' +
-        '<button type="button" class="btn btn-danger" id="drDel"><i class="fa-solid fa-trash"></i> Hapus</button>';
-    $('drEdit').addEventListener('click', () => openEdit(ROWS[cur]));
-    $('drDel').addEventListener('click', () => delItem(cur));
+    $('drFoot').innerHTML = CAN
+        ? '<button type="button" class="btn" id="drEdit"><i class="fa-solid fa-pen"></i> Edit Pengecualian</button>' +
+          '<button type="button" class="btn btn-danger" id="drDel"><i class="fa-solid fa-trash"></i> Hapus</button>'
+        : '';
+    if (CAN) {
+        $('drEdit').addEventListener('click', () => openEdit(ROWS[cur]));
+        $('drDel').addEventListener('click', () => delItem(cur));
+    }
     dr.classList.add('open'); veil.classList.add('open'); dr.setAttribute('aria-hidden', 'false');
 }
 
@@ -662,7 +754,7 @@ document.querySelectorAll('.ab').forEach(b => b.addEventListener('click', ev => 
 $('drClose').addEventListener('click', closeDrawer); veil.addEventListener('click', closeDrawer);
 document.addEventListener('keydown', ev => { if (ev.key === 'Escape') { closeModal(); closeDrawer(); } });
 
-/* ===== BUKA OTOMATIS DARI LINK LAMA (?buka=tambah|detail|edit&id=..) ===== */
+/* ===== BUKA OTOMATIS DARI LINK (?buka=tambah|detail|edit&id=..) ===== */
 (function () {
     const q = new URLSearchParams(location.search), b = q.get('buka');
     if (!b) return;
