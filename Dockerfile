@@ -1,4 +1,4 @@
-# ---------- Stage 1: build aset frontend ----------
+# ---------- Stage 1: Build frontend ----------
 FROM node:22-alpine AS assets
 WORKDIR /app
 
@@ -12,22 +12,29 @@ COPY public ./public
 RUN npm run build
 
 
-# ---------- Stage 2: install dependency PHP ----------
+# ---------- Stage 2: Composer dependencies ----------
 FROM composer:2 AS vendor
 WORKDIR /app
 
 COPY composer.json composer.lock ./
-RUN composer install --no-dev --no-interaction --prefer-dist --no-scripts --no-autoloader
+
+RUN composer install \
+    --no-dev \
+    --no-interaction \
+    --prefer-dist \
+    --no-scripts \
+    --no-autoloader \
+    --ignore-platform-req=php
 
 COPY . .
 RUN composer dump-autoload --no-dev --optimize
 
 
-# ---------- Stage 3: runtime PHP 8.4 + Apache ----------
+# ---------- Stage 3: PHP 8.4 Apache ----------
 FROM php:8.4-apache
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        libzip-dev libonig-dev unzip \
+    libzip-dev libonig-dev unzip \
     && docker-php-ext-install pdo_mysql mbstring bcmath zip \
     && a2enmod rewrite \
     && rm -rf /var/lib/apt/lists/*
@@ -36,9 +43,7 @@ ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 ENV PORT=3000
 
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf \
-    && sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf \
-    && sed -ri 's/Listen 80/Listen 3000/' /etc/apache2/ports.conf \
-    && sed -ri 's/<VirtualHost \*:80>/<VirtualHost *:3000>/' /etc/apache2/sites-available/*.conf
+    && sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
 WORKDIR /var/www/html
 
