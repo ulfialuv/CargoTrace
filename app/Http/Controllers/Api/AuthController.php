@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use App\Services\AuditLogService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -47,12 +48,17 @@ class AuthController extends ApiController
 
         $user->forceFill(['last_login_at' => now()])->save();
 
+        app(AuditLogService::class)->recordFor($user, 'LOGIN', 'Autentikasi', 'Login melalui API');
+
         return $this->ok($this->tokenPayload($user), 'Login berhasil.');
     }
 
     public function logout(Request $request): JsonResponse
     {
-        $request->user()->currentAccessToken()->delete();
+        $user = $request->user();
+        $user->currentAccessToken()->delete();
+
+        app(AuditLogService::class)->recordFor($user, 'LOGOUT', 'Autentikasi', 'Logout melalui API');
 
         return $this->ok(null, 'Logout berhasil.');
     }

@@ -25,4 +25,9 @@ return [
         // Jenis exception yang dibuat otomatis saat shipment terlambat.
         'exception_type'   => env('CARGOTRACE_DELAY_EXCEPTION_TYPE', 'PORT_CONGESTION'),
     ],
+
+    // Password akun demo yang dibuat oleh `php artisan db:seed` (jangan dipakai di production).
+    'demo' => [
+        'password' => env('DEMO_PASSWORD', 'password'),
+    ],
 ];

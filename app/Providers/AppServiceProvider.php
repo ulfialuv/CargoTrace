@@ -2,6 +2,16 @@
 
 namespace App\Providers;
 
+use App\Models\Carrier;
+use App\Models\Facility;
+use App\Models\Shipment;
+use App\Models\ShipmentException;
+use App\Models\User;
+use App\Observers\AuditObserver;
+use App\Services\AuditLogService;
+use Illuminate\Auth\Events\Login;
+use Illuminate\Auth\Events\Logout;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +29,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Audit log: catat tambah / ubah / hapus data utama.
+        foreach ([Shipment::class, ShipmentException::class, Carrier::class, Facility::class, User::class] as $model) {
+            $model::observe(AuditObserver::class);
+        }
+
+        // Audit log: login & logout lewat halaman web (sesi).
+        Event::listen(Login::class, fn (Login $event) => app(AuditLogService::class)
+            ->recordFor($event->user, 'LOGIN', 'Autentikasi', 'Login ke sistem'));
+
+        Event::listen(Logout::class, fn (Logout $event) => app(AuditLogService::class)
+            ->recordFor($event->user, 'LOGOUT', 'Autentikasi', 'Logout dari sistem'));
     }
 }

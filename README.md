@@ -1,58 +1,202 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# CargoTrace
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Shipment tracking and exception management for logistics operations, built with **Laravel 13** (PHP 8.3+) and MySQL.
 
-## About Laravel
+CargoTrace answers three questions for the people who move cargo: *where is my shipment, is it late, and what went wrong?*
+Operators record tracking events and exceptions, administrators manage master data and users, and customers follow only their own shipments on a timeline and a map.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+> Final project for Web Programming 2. All demo data is synthetic.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Features
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+| Area | What it does |
+|---|---|
+| **Roles & access** | Three roles (admin, operator, customer). Access is enforced on the server by middleware and per-user data scoping, not only by hiding buttons. |
+| **Shipment lifecycle** | `CREATED → BOOKED → PICKED_UP → IN_TRANSIT → DELIVERED`. Only the next status is allowed, `DELIVERED` is terminal, and pickup requires payment when the payment module is active. |
+| **Tracking** | Historical tracking events with location, coordinates, time, description and author. Timeline view and route on a Leaflet / OpenStreetMap map. |
+| **ETA & delay** | Compares the current ETA (`estimated_arrival`) with the promised date (`expected_arrival`). Delay duration, severity and the reason are shown. Threshold is configurable. |
+| **Exceptions** | `CUSTOMS_HOLD`, `WEATHER_DELAY`, `PORT_CONGESTION`, `DAMAGED`, `MISROUTED`, `DOCUMENTATION_ISSUE` with severity, `OPEN / INVESTIGATING / RESOLVED` status, detection and resolution time, and a change history. Delays create and close an exception automatically. |
+| **Dashboard** | Shipment counts by status, exceptions and charts (Chart.js). |
+| **REST API** | Token authentication with Laravel Sanctum, consistent JSON envelope, pagination, filters. |
+| **Audit log** | Records who did what and when: create / update / delete of shipments, exceptions, carriers, locations and users, shipment status changes, and login / logout (web and API), with old and new values. Passwords are never stored. Admin only. |
+| **Extras** | Weather and geocoding (Open-Meteo, Nominatim), currency and world time, news (GNews, optional), in-app notifications. |
 
-## Learning Laravel
+Weather is shown as context only; it is never used to predict delays.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Roles
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+| | Admin | Operator | Customer |
+|---|:-:|:-:|:-:|
+| Manage users, carriers, locations | ✅ | – | – |
+| Create / edit shipments, record tracking, change status | ✅ | ✅ | – |
+| Report and update exceptions | ✅ | ✅ | – |
+| Delete shipments | ✅ | – | – |
+| View shipments, tracking, exceptions | all | all | **own only** |
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+## Architecture
 
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+```
+Browser / API client
+   → Routes + Middleware        (auth, role)
+   → Controllers                (HTTP only: validate, call a service, shape the response)
+   → Services                   (business rules and transactions)
+   → Eloquent models → MySQL
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+| Service | Responsibility |
+|---|---|
+| `ShipmentService` | create / update / delete rules, shipment numbers |
+| `TrackingService` | status transitions, tracking events, payment gate |
+| `EtaService` | deterministic ETA vs expected-arrival rule, severity, human-readable reason |
+| `ExceptionService` | exception lifecycle with history, automatic delay exceptions |
+| `AuditLogService` | writes audit log entries (called by `AuditObserver` for model changes and by the login/logout listeners) |
 
-## Contributing
+The REST API controllers (`app/Http/Controllers/Api`) already use these services. Some older web controllers still contain their own logic and are being migrated.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Getting started
 
-## Code of Conduct
+Requirements: PHP 8.3+, Composer, MySQL, and the PHP extensions `pdo_mysql`, `mbstring`, `openssl`. (With [Laragon](https://laragon.org) these are included.)
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```bash
+git clone <your-repository-url> cargotrace
+cd cargotrace
 
-## Security Vulnerabilities
+composer install
+cp .env.example .env          # Windows: copy .env.example .env
+php artisan key:generate
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Create an empty MySQL database named `cargotrace` (or change `DB_*` in `.env`), then:
 
-## License
+```bash
+php artisan migrate
+php artisan db:seed           # demo accounts, carriers, locations, shipments, exceptions
+php artisan serve             # http://127.0.0.1:8000
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+`npm install && npm run build` is only needed for the Vite-based welcome page.
+
+### Demo accounts
+
+`php artisan db:seed` is safe to run repeatedly: it never overwrites an existing account's password and only recreates the `CT-DEMO-xxx` shipments. It does nothing when `APP_ENV=production`.
+
+| Role | Email | Password |
+|---|---|---|
+| Admin | `admin@cargotrace.com` | value of `DEMO_PASSWORD` in `.env` (default `password`) |
+| Operator | `operator1@cargotrace.test`, `operator2@cargotrace.test` | same |
+| Customer | `customer1@cargotrace.test` … `customer3@cargotrace.test` | same |
+
+If `admin@cargotrace.com` already exists in your database, its current password is kept.
+
+The seeded data covers every lifecycle status, three delayed shipments (LOW / MEDIUM / HIGH), open, investigating and resolved exceptions, and an on-time delivery, so each screen has something to show.
+
+## ETA and delay rule
+
+```
+delay      = estimated_arrival (current ETA) − expected_arrival (promised date)
+delayed    = delay > CARGOTRACE_DELAY_THRESHOLD_HOURS
+severity   = LOW     if delay ≤ 6 h
+             MEDIUM  if 6 h < delay ≤ 24 h
+             HIGH    if delay > 24 h
+```
+
+Differences are computed in whole minutes. When a shipment becomes delayed an `[AUTO-DELAY]` exception is created; it is updated if the severity changes, and closed automatically when the shipment is back on time or delivered. Every shipment returned by the API includes a `delay` object with the values used and a plain-language reason.
+
+The threshold and the severity bands are configured in `.env` (see `config/cargotrace.php`), so each group can use its own scenario:
+
+```
+CARGOTRACE_DELAY_THRESHOLD_HOURS=12
+CARGOTRACE_DELAY_LOW_MAX_HOURS=6
+CARGOTRACE_DELAY_MEDIUM_MAX_HOURS=24
+```
+
+Run `php artisan config:clear` after changing them.
+
+## REST API
+
+Base path `/api` (the same routes are also available under `/api/v1`). Authenticate with a Sanctum bearer token.
+
+```bash
+# 1. log in and copy data.token from the response
+curl -X POST http://127.0.0.1:8000/api/login \
+  -H "Accept: application/json" -H "Content-Type: application/json" \
+  -d '{"email":"operator1@cargotrace.test","password":"password"}'
+
+# 2. call an endpoint
+curl http://127.0.0.1:8000/api/shipments -H "Accept: application/json" -H "Authorization: Bearer <token>"
+```
+
+| Method | Endpoint | Roles |
+|---|---|---|
+| POST | `/register`, `/login` | public (register always creates a customer) |
+| POST / GET | `/logout`, `/user` | any logged-in user |
+| GET | `/shipments`, `/shipments/{id}` | all (customer: own only) |
+| POST | `/shipments` | admin, operator |
+| PUT / PATCH | `/shipments/{id}` | admin, operator |
+| PATCH | `/shipments/{id}/status` | admin, operator |
+| DELETE | `/shipments/{id}` | admin |
+| GET / POST | `/shipments/{id}/tracking` | read: all (own only); write: admin, operator |
+| GET / POST | `/shipments/{id}/exceptions` | read: all (own only); write: admin, operator |
+| GET | `/exceptions`, `/exceptions/{id}` | all (customer: own only) |
+| POST | `/exceptions` | admin, operator |
+| PUT / PATCH | `/exceptions/{id}` | admin, operator |
+| GET | `/carriers`, `/locations` (+ `/{id}`) | all |
+| POST / PUT / DELETE | `/carriers`, `/locations` | admin |
+
+Filters and pagination: `?page=`, `?per_page=` (max 50), `?status=`, `?search=` and more per resource.
+
+**Response format**
+
+```json
+{ "success": true,  "message": "OK", "data": { }, "meta": { "current_page": 1, "per_page": 15, "total": 42, "last_page": 3 } }
+{ "success": false, "message": "Data yang dikirim tidak valid.", "errors": { "status": ["..."] } }
+```
+
+| Code | Meaning |
+|---|---|
+| 200 / 201 | success / created |
+| 401 | missing or invalid token |
+| 403 | role not allowed, or someone else's data |
+| 404 | not found |
+| 409 | conflict (e.g. deleting a paid shipment or a carrier in use) |
+| 422 | validation error or invalid status transition |
+| 429 | rate limited |
+
+A Postman collection is included in `docs/` (import it, set `base_url`, run **Auth → Login** first).
+
+## Testing
+
+```bash
+php artisan test
+```
+
+Tests run on an in-memory SQLite database (enable the `pdo_sqlite` PHP extension), so your MySQL data is never touched. They cover authentication, role and ownership rules, shipment CRUD, tracking and invalid status transitions, ETA/delay severity boundaries and thresholds, automatic delay exceptions, the web role restrictions, and the demo seeder.
+
+## Project structure
+
+```
+app/Http/Controllers/Api   REST API controllers (thin)
+app/Http/Resources         JSON resources
+app/Services               business rules
+app/Exceptions             BusinessRuleException
+config/cargotrace.php      delay rule + demo password settings
+database/seeders           DemoSeeder, AdminSeeder
+routes/web.php             web UI (admin group is protected by role:admin)
+routes/api.php             REST API
+tests/                     Unit + Feature tests
+```
+
+## Security notes
+
+- Roles are enforced server-side (`role:` middleware) and customers are scoped to their own records.
+- Registration through the API can only create customers.
+- Login endpoints are rate limited.
+- `.env` is git-ignored. Never commit real credentials, and never run the demo seeder against production data.
+
+## Roadmap
+
+- [ ] ERD and data dictionary (`docs/`)
+- [ ] GitHub Actions CI (run tests on every push)
+- [ ] Deployment
+- [ ] Move the remaining web controllers onto the service layer
+- [ ] Normalise `carrier`, `origin` and `destination` into foreign keys, and add `shipment_items`

@@ -222,8 +222,71 @@ class DashboardController extends Controller
      * Pemasukan dikelompokkan per hari (800 hari terakhir), per bulan dan per tahun (5 tahun).
      * Cukup satu query GROUP BY tanggal, sisanya dijumlahkan di PHP.
      */
+    /**
+     * Pemasukan dari tabel shipment_payments: hanya pembayaran berstatus PAID,
+     * dijumlahkan dari kolom `total` dan dikelompokkan menurut tanggal bayar.
+     * Menghasilkan angka yang sama dengan kartu "Pendapatan Lunas" di halaman Pengiriman.
+     * Mengembalikan null jika tabel pembayaran belum ada (dipakai cara lama).
+     */
+    private function buildIncomeFromPayments(Carbon $now): ?array
+    {
+        try {
+            if (! Schema::hasTable('shipment_payments')) {
+                return null;
+            }
+
+            $g       = DB::connection()->getQueryGrammar();
+            $dateSql = 'DATE(COALESCE(' . $g->wrap('paid_at') . ', ' . $g->wrap('created_at') . '))';
+
+            $rows = DB::table('shipment_payments')
+                ->where('status', 'PAID')
+                ->whereRaw($dateSql . ' >= ?', [$now->copy()->subYears(5)->startOfYear()->format('Y-m-d')])
+                ->selectRaw("$dateSql AS d, COUNT(DISTINCT shipment_id) AS c, COALESCE(SUM(total), 0) AS t")
+                ->groupBy('d')
+                ->orderBy('d')
+                ->get();
+        } catch (\Throwable $e) {
+            return null;
+        }
+
+        $dailyFrom = $now->copy()->subDays(800)->format('Y-m-d');
+        $daily  = [];
+        $months = [];
+        $years  = [];
+
+        foreach ($rows as $r) {
+            $d = (string) $r->d;
+            $c = (int) $r->c;
+            $t = (float) $r->t;
+
+            if ($d >= $dailyFrom) {
+                $daily[] = ['k' => $d, 'c' => $c, 't' => $t];
+            }
+
+            $m = substr($d, 0, 7);
+            $y = substr($d, 0, 4);
+            $months[$m] = ['k' => $m, 'c' => ($months[$m]['c'] ?? 0) + $c, 't' => ($months[$m]['t'] ?? 0) + $t];
+            $years[$y]  = ['k' => $y, 'c' => ($years[$y]['c'] ?? 0) + $c, 't' => ($years[$y]['t'] ?? 0) + $t];
+        }
+
+        return [
+            'available' => true,
+            'column'    => 'shipment_payments.total',
+            'daily'     => $daily,
+            'months'    => array_values($months),
+            'years'     => array_values($years),
+        ];
+    }
+
     private function buildIncome(Carbon $now): array
     {
+        // Pemasukan sebenarnya ada di tabel pembayaran (sama dengan angka di halaman Pengiriman).
+        $fromPayments = $this->buildIncomeFromPayments($now);
+
+        if ($fromPayments !== null) {
+            return $fromPayments;
+        }
+
         $out = ['available' => false, 'column' => null, 'daily' => [], 'months' => [], 'years' => []];
 
         try {
