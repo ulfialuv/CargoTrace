@@ -24,6 +24,7 @@ use App\Http\Controllers\CustomerShipmentController;
 use App\Http\Controllers\CustomerTrackingController;
 use App\Http\Controllers\CustomerNotificationController;
 use App\Http\Controllers\CustomerProfileController;
+use App\Http\Controllers\Api\ExternalDataController;
 
 /*
 |--------------------------------------------------------------------------
@@ -49,6 +50,9 @@ Route::get('/login', function () {
 Route::post('/login', [LoginController::class, 'login'])
     ->name('login.process');
 
+Route::post('/register', [LoginController::class, 'register'])
+    ->name('register.process');
+
 
 /*
 |--------------------------------------------------------------------------
@@ -68,6 +72,13 @@ Route::post('/logout', [LoginController::class, 'logout'])
 */
 
 Route::middleware('auth')->group(function () {
+
+    // Geocoding & cuaca lewat server untuk semua role yang login (dipanggil via fetch dari halaman)
+    Route::middleware('throttle:30,1')->prefix('tools')->name('tools.')->group(function () {
+        Route::get('/geocode', [ExternalDataController::class, 'geocode'])->name('geocode');
+        Route::get('/weather', [ExternalDataController::class, 'weather'])->name('weather');
+    });
+
 
 
     /*

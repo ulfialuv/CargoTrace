@@ -39,5 +39,17 @@ return [
     'key' => env('GNEWS_API_KEY'),
 ],
 
+// Nominatim wajib User-Agent yang mengidentifikasi aplikasi (isi kontak sendiri di .env).
+'geocoding' => [
+    'base_url'   => env('GEOCODING_BASE_URL', 'https://nominatim.openstreetmap.org'),
+    'user_agent' => env('GEOCODING_USER_AGENT', 'CargoTrace/1.0 (student project)'),
+    'timeout'    => (int) env('GEOCODING_TIMEOUT', 5),
+],
+
+'weather' => [
+    'base_url' => env('WEATHER_BASE_URL', 'https://api.open-meteo.com/v1'),
+    'timeout'  => (int) env('WEATHER_TIMEOUT', 5),
+],
+
 
 ];

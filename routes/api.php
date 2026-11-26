@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CarrierController;
 use App\Http\Controllers\Api\ExceptionController;
+use App\Http\Controllers\Api\ExternalDataController;
 use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Api\ShipmentController;
 use App\Http\Controllers\Api\TrackingController;
@@ -54,6 +55,12 @@ $api = function () {
             Route::get('carriers/{id}', [CarrierController::class, 'show']);
             Route::get('locations', [LocationController::class, 'index']);
             Route::get('locations/{id}', [LocationController::class, 'show']);
+
+            // Layanan eksternal lewat server (geocoding & cuaca)
+            Route::middleware('throttle:30,1')->group(function () {
+                Route::get('geocode', [ExternalDataController::class, 'geocode']);
+                Route::get('weather', [ExternalDataController::class, 'weather']);
+            });
 
             // Admin + operator
             Route::middleware('role:admin,operator')->group(function () {
