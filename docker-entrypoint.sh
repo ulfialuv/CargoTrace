@@ -1,17 +1,20 @@
 #!/bin/sh
 set -e
 
-# Apache dengarkan port dari platform (default 8080)
-PORT="${PORT:-8080}"
-sed -ri "s/Listen 80/Listen ${PORT}/" /etc/apache2/ports.conf
-sed -ri "s/<VirtualHost \*:80>/<VirtualHost *:${PORT}>/" /etc/apache2/sites-available/000-default.conf
+# Gunakan port yang diberikan EthioDeploy
+PORT="${PORT:-3000}"
 
-# Cache config/route/view untuk production
+# Atur Apache agar mendengarkan port tersebut
+sed -ri "s/Listen [0-9]+/Listen ${PORT}/" /etc/apache2/ports.conf
+sed -ri "s/<VirtualHost \*:[0-9]+>/<VirtualHost *:${PORT}>/" /etc/apache2/sites-available/000-default.conf
+
+# Cache konfigurasi Laravel
 php artisan config:cache
 php artisan route:cache || true
 php artisan view:cache || true
 
-# Jalankan migrasi (butuh DB sudah tersambung)
+# Jalankan migrasi database
 php artisan migrate --force
 
+# Jalankan Apache
 exec apache2-foreground
