@@ -22,23 +22,6 @@ class DashboardIncomeTest extends TestCase
         return $method->invoke(app(DashboardController::class), now());
     }
 
-    private function createPaymentsTable(): void
-    {
-        Schema::create('shipment_payments', function ($t) {
-            $t->id();
-            $t->unsignedBigInteger('shipment_id');
-            $t->string('invoice_number', 40)->unique();
-            $t->string('method', 20);
-            $t->unsignedBigInteger('subtotal');
-            $t->unsignedBigInteger('tax');
-            $t->unsignedBigInteger('fee');
-            $t->unsignedBigInteger('total');
-            $t->string('status', 12);
-            $t->timestamp('paid_at')->nullable();
-            $t->timestamps();
-        });
-    }
-
     private function payment(int $n, int $total, string $status, $paidAt): void
     {
         DB::table('shipment_payments')->insert([
@@ -58,7 +41,6 @@ class DashboardIncomeTest extends TestCase
 
     public function test_income_sums_only_paid_payments(): void
     {
-        $this->createPaymentsTable();
         $this->payment(1, 100000, 'PAID', now());
         $this->payment(2, 158333, 'PAID', now()->subMonthNoOverflow());
         $this->payment(3, 50000, 'PENDING', null);
@@ -77,7 +59,6 @@ class DashboardIncomeTest extends TestCase
 
     public function test_income_is_zero_but_available_when_nothing_is_paid_yet(): void
     {
-        $this->createPaymentsTable();
         $this->payment(1, 50000, 'PENDING', null);
 
         $income = $this->income();
@@ -89,6 +70,9 @@ class DashboardIncomeTest extends TestCase
 
     public function test_falls_back_to_the_old_method_when_payment_table_does_not_exist(): void
     {
+        // Tabel sekarang dibuat oleh migration; hapus dulu untuk menguji jalur cadangan.
+        Schema::dropIfExists('shipment_payments');
+
         $income = $this->income();
 
         $this->assertFalse($income['available']); // tidak ada kolom harga di tabel shipments

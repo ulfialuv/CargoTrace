@@ -19,6 +19,24 @@ class TrackingApiTest extends TestCase
         return "/api/v1/shipments/{$shipment->id}/tracking";
     }
 
+    /** Tabel shipment_payments dibuat oleh migration; helper ini hanya mengisi satu pembayaran LUNAS. */
+    private function markPaid(int $shipmentId): void
+    {
+        DB::table('shipment_payments')->insert([
+            'shipment_id'    => $shipmentId,
+            'invoice_number' => 'INV-TEST-' . $shipmentId,
+            'method'         => 'VA',
+            'subtotal'       => 100000,
+            'tax'            => 0,
+            'fee'            => 0,
+            'total'          => 100000,
+            'status'         => 'PAID',
+            'paid_at'        => now(),
+            'created_at'     => now(),
+            'updated_at'     => now(),
+        ]);
+    }
+
     public function test_operator_advances_status_through_tracking_event(): void
     {
         $shipment = $this->makeShipment(['status' => 'CREATED']);
@@ -68,6 +86,7 @@ class TrackingApiTest extends TestCase
     public function test_full_lifecycle_reaches_delivered_and_then_is_terminal(): void
     {
         $shipment = $this->makeShipment(['status' => 'CREATED']);
+        $this->markPaid($shipment->id); // gerbang pembayaran aktif karena tabelnya ada
         Sanctum::actingAs($this->makeUser('operator'));
 
         foreach (['BOOKED', 'PICKED_UP', 'IN_TRANSIT', 'DELIVERED'] as $status) {
@@ -108,13 +127,6 @@ class TrackingApiTest extends TestCase
 
     public function test_payment_gate_blocks_pickup_until_paid(): void
     {
-        // Tabel pembayaran dibuat saat runtime oleh modul web; di test kita buat versi minimal.
-        Schema::create('shipment_payments', function (Blueprint $t) {
-            $t->id();
-            $t->unsignedBigInteger('shipment_id');
-            $t->string('status');
-        });
-
         $shipment = $this->makeShipment(['status' => 'BOOKED']);
         Sanctum::actingAs($this->makeUser('operator'));
 
@@ -122,7 +134,7 @@ class TrackingApiTest extends TestCase
             ->assertStatus(422);
         $this->assertSame('BOOKED', $shipment->fresh()->status);
 
-        DB::table('shipment_payments')->insert(['shipment_id' => $shipment->id, 'status' => 'PAID']);
+        $this->markPaid($shipment->id);
 
         $this->patchJson("/api/v1/shipments/{$shipment->id}/status", ['status' => 'PICKED_UP'])
             ->assertOk()
