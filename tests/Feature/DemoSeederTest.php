@@ -164,6 +164,17 @@ class DemoSeederTest extends TestCase
         $this->assertTrue(Hash::check('rahasia-lama-123', User::where('email', 'admin@cargotrace.com')->value('password')));
     }
 
+    public function test_can_be_enabled_explicitly_for_a_demo_server(): void
+    {
+        $this->app['env'] = 'production';
+        config(['cargotrace.demo.allow_in_production' => true]);
+
+        $this->app->make(DemoSeeder::class)->run();
+
+        $this->assertSame(12, Shipment::where('shipment_number', 'like', 'CT-DEMO-%')->count());
+        $this->assertSame(6, User::count());
+    }
+
     public function test_is_skipped_in_production(): void
     {
         $this->app['env'] = 'production';

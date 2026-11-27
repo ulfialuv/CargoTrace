@@ -29,5 +29,8 @@ return [
     // Password akun demo yang dibuat oleh `php artisan db:seed` (jangan dipakai di production).
     'demo' => [
         'password' => env('DEMO_PASSWORD', 'password'),
+
+        // Server demo/percobaan (mis. hosting tugas) boleh mengisi data demo walau APP_ENV=production.
+        'allow_in_production' => (bool) env('DEMO_ALLOW_PRODUCTION', false),
     ],
 ];

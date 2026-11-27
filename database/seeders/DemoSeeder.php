@@ -21,7 +21,7 @@ use Illuminate\Database\Seeder;
  *  - Shipment demo bernomor CT-DEMO-xxx dihapus lalu dibuat ulang tiap seeding,
  *    jadi seeder ini idempotent dan tidak menyentuh shipment lain.
  *  - Tanggal dibuat relatif terhadap "sekarang", jadi data selalu terlihat segar.
- *  - Tidak berjalan di environment production.
+ *  - Tidak berjalan di environment production, kecuali DEMO_ALLOW_PRODUCTION=true (server demo).
  */
 class DemoSeeder extends Seeder
 {
@@ -29,8 +29,8 @@ class DemoSeeder extends Seeder
 
     public function run(): void
     {
-        if (app()->environment('production')) {
-            $this->command?->warn('DemoSeeder dilewati: tidak dijalankan di environment production.');
+        if (app()->environment('production') && ! config('cargotrace.demo.allow_in_production')) {
+            $this->command?->warn('DemoSeeder dilewati: tidak dijalankan di environment production (set DEMO_ALLOW_PRODUCTION=true hanya untuk server demo).');
 
             return;
         }
