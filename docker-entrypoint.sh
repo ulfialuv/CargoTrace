@@ -1,6 +1,11 @@
 #!/bin/sh
-# Dijalankan setiap container start. Pesan berawalan [entrypoint] muncul di log hosting.
 set -e
+
+# Laravel membaca DB_URL, sedangkan EthioDeploy memberi DATABASE_URL
+if [ -n "$DATABASE_URL" ] && [ -z "$DB_URL" ]; then
+  export DB_URL="$DATABASE_URL"
+fi
+
 
 PORT="${PORT:-3000}"
 cd /var/www/html
